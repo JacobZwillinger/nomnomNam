@@ -179,11 +179,14 @@
     }
 
     .card-img-wrap img {
+      position: absolute;
+      inset: 0;
       width: 100%;
       height: 100%;
       object-fit: cover;
       display: block;
       transition: opacity 0.3s;
+      z-index: 1;
     }
 
     .card-img-wrap img.loading { opacity: 0; }
@@ -214,6 +217,7 @@
       font-size: 14px;
       border: 1.5px solid rgba(255,255,255,0.15);
       transition: transform 0.15s;
+      z-index: 2;
     }
 
     .card:active .play-badge { transform: scale(1.15); }
@@ -1059,8 +1063,8 @@ const dishes = [
     ingredients: ["rice flour batter", "egg", "shrimp", "pork", "bean sprouts", "star fruit", "green banana", "peanut sesame dipping sauce"],
     desc: "A Hue specialty highlighted by Legal Nomads. Similar to bánh xèo but thicker and crispier, stuffed with shrimp and pork, and served with a rich peanut-sesame dipping sauce plus tart fruit and herbs.",
     emoji: "🥞",
-    img: "images/banh-xeo.jpg",
-    audio: "audio/banh-xeo.mp3"
+    img: "images/banh-khoai.jpg",
+    audio: "audio/banh-khoai.mp3"
   },
   {
     id: "banh-trang-trung",
@@ -1073,8 +1077,8 @@ const dishes = [
     ingredients: ["rice paper", "egg", "dried shrimp", "scallions", "chili sauce", "crispy shallots"],
     desc: "The Hue street version called out by Legal Nomads: rice paper grilled over charcoal with egg and toppings until crackly and savory. Fast, cheap, and perfect as a walking snack.",
     emoji: "🍳",
-    img: "images/banh-trang-nuong.jpg",
-    audio: "audio/banh-trang-nuong.mp3"
+    img: "images/banh-trang-trung.jpg",
+    audio: "audio/banh-trang-trung.mp3"
   },
   {
     id: "banh-da-xuc-hen",
@@ -1087,8 +1091,8 @@ const dishes = [
     ingredients: ["toasted sesame rice cracker", "baby clams", "lemongrass", "shrimp paste", "chili", "peanuts", "herbs"],
     desc: "Legal Nomads notes this as a favorite Hue bite: intensely seasoned baby clams scooped with giant toasted sesame crackers. Crunchy, briny, spicy, and very local.",
     emoji: "🦪",
-    img: "images/com-hen.jpg",
-    audio: "audio/com-hen.mp3"
+    img: "images/banh-da-xuc-hen.jpg",
+    audio: "audio/banh-da-xuc-hen.mp3"
   },
   {
     id: "banh-tam-bi",
@@ -1101,8 +1105,8 @@ const dishes = [
     ingredients: ["thick rice noodles", "shredded pork skin", "coconut cream sauce", "pickled vegetables", "herbs", "roasted rice powder"],
     desc: "A Saigon and Mekong specialty from Legal Nomads: short thick rice noodles topped with pork skin and a rich coconut sauce. Served with herbs and pickles for balance.",
     emoji: "🥢",
-    img: "images/hu-tieu.jpg",
-    audio: "audio/hu-tieu.mp3"
+    img: "images/banh-tam-bi.jpg",
+    audio: "audio/banh-tam-bi.mp3"
   },
   {
     id: "com-suon",
@@ -1115,8 +1119,8 @@ const dishes = [
     ingredients: ["broken or jasmine rice", "grilled pork chop", "fish sauce", "pickled carrot", "scallion oil", "fried egg"],
     desc: "Legal Nomads flags this as a core Saigon meal: smoky marinated pork chop over rice, usually with pickles and scallion oil. Straightforward, satisfying, and everywhere.",
     emoji: "🍖",
-    img: "images/com-tam.jpg",
-    audio: "audio/com-tam.mp3"
+    img: "images/com-suon.jpg",
+    audio: "audio/com-suon.mp3"
   },
   {
     id: "canh-kho-qua-nhoi-thit",
@@ -1129,8 +1133,8 @@ const dishes = [
     ingredients: ["bitter melon", "minced pork", "glass noodles", "wood ear mushrooms", "green onions", "clear broth"],
     desc: "A classic home-style dish featured by Legal Nomads in Saigon food coverage: bitter melon stuffed with seasoned pork in a clear broth. Slightly bitter, deeply savory, and often eaten at family meals.",
     emoji: "🥬",
-    img: "images/canh-chua.jpg",
-    audio: "audio/canh-chua.mp3"
+    img: "images/canh-kho-qua-nhoi-thit.jpg",
+    audio: "audio/canh-kho-qua-nhoi-thit.mp3"
   },
   {
     id: "che-chuoi",
@@ -1143,8 +1147,8 @@ const dishes = [
     ingredients: ["banana", "tapioca pearls", "coconut milk", "pandan", "sesame seeds", "peanuts"],
     desc: "Called out by Legal Nomads as a standout dessert in Saigon: warm bananas simmered in coconut milk with chewy tapioca pearls. Sweet, creamy, and fragrant.",
     emoji: "🍌",
-    img: "images/che.jpg",
-    audio: "audio/che.mp3"
+    img: "images/che-chuoi.jpg",
+    audio: "audio/che-chuoi.mp3"
   }
 ];
 
