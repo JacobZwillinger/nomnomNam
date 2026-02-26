@@ -1,7 +1,7 @@
 // NomNom Nam — Service Worker
 // Caches all assets for offline use (critical for travel!)
 
-const CACHE = "nomnomnam-v1";
+const CACHE = "nomnomnam-v2";
 
 const STATIC = [
   "./index.html",
