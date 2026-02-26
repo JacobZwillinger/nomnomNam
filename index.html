@@ -1,0 +1,1407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#e85d3f">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <title>🍜 NomNom Nam</title>
+  <style>
+    :root {
+      --bg: #0f0f0f;
+      --surface: #1a1a1a;
+      --surface2: #242424;
+      --border: #2e2e2e;
+      --text: #f0ede8;
+      --text-muted: #888;
+      --accent: #e85d3f;
+      --accent2: #f4a435;
+      --green: #4caf50;
+      --radius: 16px;
+      --radius-sm: 10px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      min-height: 100dvh;
+      overflow-x: hidden;
+    }
+
+    /* ── HEADER ── */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(15,15,15,0.92);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      padding: 14px 16px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .logo { font-size: 26px; }
+
+    .header-titles { flex: 1; }
+
+    h1 {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: var(--text);
+    }
+
+    .subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+
+    .dish-count {
+      background: var(--accent);
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 20px;
+    }
+
+    /* ── FILTER TABS ── */
+    .filter-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    .filter-tab {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .filter-tab.active {
+      color: var(--text);
+      background: var(--surface2);
+    }
+
+    /* ── FILTER PILLS ── */
+    .filters-row {
+      overflow-x: auto;
+      display: flex;
+      gap: 7px;
+      padding-bottom: 12px;
+      scrollbar-width: none;
+    }
+    .filters-row::-webkit-scrollbar { display: none; }
+
+    .pill {
+      white-space: nowrap;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 7px 14px;
+      border-radius: 20px;
+      border: 1.5px solid var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.18s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .pill:active { transform: scale(0.94); }
+
+    .pill.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+
+    .pill .pill-icon { font-size: 14px; }
+
+    /* ── GRID ── */
+    main {
+      padding: 14px 12px 100px;
+    }
+
+    .results-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      padding: 0 2px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    /* ── CARD ── */
+    .card {
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: var(--surface);
+      cursor: pointer;
+      transition: transform 0.18s, box-shadow 0.18s;
+      position: relative;
+      border: 1px solid var(--border);
+    }
+
+    .card:active { transform: scale(0.97); }
+
+    .card-img-wrap {
+      position: relative;
+      aspect-ratio: 4/3;
+      overflow: hidden;
+      background: var(--surface2);
+    }
+
+    .card-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: opacity 0.3s;
+    }
+
+    .card-img-wrap img.loading { opacity: 0; }
+    .card-img-wrap img.loaded { opacity: 1; }
+
+    .img-placeholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 42px;
+      background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
+    }
+
+    .play-badge {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      width: 36px;
+      height: 36px;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(6px);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      border: 1.5px solid rgba(255,255,255,0.15);
+      transition: transform 0.15s;
+    }
+
+    .card:active .play-badge { transform: scale(1.15); }
+
+    .play-badge.playing {
+      background: var(--accent);
+      border-color: var(--accent);
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(232,93,63,0.5); }
+      50% { transform: scale(1.08); box-shadow: 0 0 0 8px rgba(232,93,63,0); }
+    }
+
+    .card-body {
+      padding: 10px 10px 11px;
+    }
+
+    .card-vi {
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+      color: var(--text);
+      line-height: 1.2;
+      margin-bottom: 3px;
+    }
+
+    .card-en {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 5px;
+    }
+
+    .card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 3px;
+    }
+
+    .tag {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 10px;
+      background: var(--surface2);
+      color: var(--text-muted);
+      letter-spacing: 0.2px;
+    }
+
+    .tag.region { background: rgba(244,164,53,0.15); color: var(--accent2); }
+    .tag.city   { background: rgba(76,175,80,0.15);  color: var(--green); }
+
+    /* ── DETAIL SHEET ── */
+    .sheet-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 200;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+      backdrop-filter: blur(4px);
+    }
+
+    .sheet-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .sheet {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 201;
+      background: var(--surface);
+      border-radius: 24px 24px 0 0;
+      transform: translateY(100%);
+      transition: transform 0.38s cubic-bezier(0.34, 1.10, 0.64, 1);
+      max-height: 85dvh;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding-bottom: env(safe-area-inset-bottom, 20px);
+    }
+
+    .sheet.open {
+      transform: translateY(0);
+    }
+
+    .sheet-handle {
+      width: 40px;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin: 12px auto 0;
+    }
+
+    .sheet-img {
+      width: 100%;
+      aspect-ratio: 16/9;
+      object-fit: cover;
+      display: block;
+      margin-top: 10px;
+    }
+
+    .sheet-content {
+      padding: 16px 20px 24px;
+    }
+
+    .sheet-vi-name {
+      font-size: 36px;
+      font-weight: 900;
+      letter-spacing: -1px;
+      color: var(--text);
+      line-height: 1.1;
+      margin-bottom: 4px;
+    }
+
+    .sheet-en-name {
+      font-size: 17px;
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-bottom: 6px;
+    }
+
+    .sheet-pronunciation {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface2);
+      border-radius: 10px;
+      padding: 7px 12px;
+      margin-bottom: 14px;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .pron-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .pron-text { font-weight: 700; color: var(--text); font-style: italic; font-size: 15px; }
+
+    .sheet-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .meta-chip {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 5px 11px;
+      border-radius: 20px;
+      border: 1.5px solid var(--border);
+    }
+
+    .meta-chip.region { border-color: rgba(244,164,53,0.4); background: rgba(244,164,53,0.08); color: var(--accent2); }
+    .meta-chip.city   { border-color: rgba(76,175,80,0.4);  background: rgba(76,175,80,0.08);  color: var(--green); }
+    .meta-chip.type   { border-color: rgba(240,237,232,0.15); color: var(--text-muted); }
+
+    .sheet-section-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .ingredients-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .ingredient-chip {
+      font-size: 13px;
+      font-weight: 500;
+      padding: 5px 12px;
+      border-radius: 20px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .sheet-description {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    /* ── SPEAK BUTTON ── */
+    .speak-btn {
+      width: 100%;
+      padding: 18px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 16px;
+      font-size: 18px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: transform 0.15s, background 0.2s;
+      letter-spacing: -0.3px;
+    }
+
+    .speak-btn:active { transform: scale(0.97); }
+
+    .speak-btn.playing {
+      background: #c0392b;
+      animation: speakPulse 0.8s infinite;
+    }
+
+    @keyframes speakPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(232,93,63,0.5); }
+      50% { box-shadow: 0 0 0 14px rgba(232,93,63,0); }
+    }
+
+    .speak-btn-sub {
+      font-size: 12px;
+      font-weight: 500;
+      opacity: 0.75;
+      display: block;
+      margin-top: 3px;
+      letter-spacing: 0;
+    }
+
+    /* ── EMPTY STATE ── */
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+    .empty-state .emoji { font-size: 48px; margin-bottom: 12px; display: block; }
+    .empty-state p { font-size: 15px; }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    /* ── PLAYING INDICATOR ── */
+    .now-playing-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 150;
+      background: var(--accent);
+      transform: translateY(100%);
+      transition: transform 0.3s;
+      padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 8px));
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .now-playing-bar.visible { transform: translateY(0); }
+
+    .sound-waves {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .wave-bar {
+      width: 3px;
+      background: white;
+      border-radius: 2px;
+      animation: wave 0.8s infinite ease-in-out;
+    }
+
+    .wave-bar:nth-child(1) { height: 8px; animation-delay: 0s; }
+    .wave-bar:nth-child(2) { height: 16px; animation-delay: 0.15s; }
+    .wave-bar:nth-child(3) { height: 12px; animation-delay: 0.3s; }
+    .wave-bar:nth-child(4) { height: 20px; animation-delay: 0.1s; }
+    .wave-bar:nth-child(5) { height: 10px; animation-delay: 0.25s; }
+
+    @keyframes wave {
+      0%, 100% { transform: scaleY(0.5); }
+      50% { transform: scaleY(1.2); }
+    }
+
+    /* ── TABLET / DESKTOP ── */
+    @media (min-width: 520px) {
+      .grid { grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+      main { padding: 16px 16px 100px; }
+    }
+
+    @media (min-width: 900px) {
+      .grid { grid-template-columns: repeat(4, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-top">
+    <span class="logo">🍜</span>
+    <div class="header-titles">
+      <h1>NomNom Nam</h1>
+      <div class="subtitle">Tap any dish · Aunty will know what you want</div>
+    </div>
+    <span class="dish-count" id="dishCount">20</span>
+  </div>
+
+  <div class="filter-tabs" id="filterTabs">
+    <button class="filter-tab active" data-group="all">All</button>
+    <button class="filter-tab" data-group="region">Region</button>
+    <button class="filter-tab" data-group="city">City</button>
+    <button class="filter-tab" data-group="type">Type</button>
+  </div>
+
+  <div class="filters-row" id="pillsRow"></div>
+</header>
+
+<!-- MAIN GRID -->
+<main>
+  <div class="results-label" id="resultsLabel">Showing all 20 dishes</div>
+  <div class="grid" id="grid"></div>
+</main>
+
+<!-- NOW PLAYING BAR -->
+<div class="now-playing-bar" id="nowPlayingBar">
+  <div class="sound-waves">
+    <div class="wave-bar"></div>
+    <div class="wave-bar"></div>
+    <div class="wave-bar"></div>
+    <div class="wave-bar"></div>
+    <div class="wave-bar"></div>
+  </div>
+  <span id="nowPlayingText"></span>
+</div>
+
+<!-- DETAIL SHEET -->
+<div class="sheet-overlay" id="sheetOverlay" onclick="closeSheet()"></div>
+<div class="sheet" id="sheet">
+  <div class="sheet-handle"></div>
+  <img class="sheet-img" id="sheetImg" src="" alt="" onerror="this.style.display='none'">
+  <div class="sheet-content">
+    <div class="sheet-vi-name" id="sheetViName"></div>
+    <div class="sheet-en-name" id="sheetEnName"></div>
+
+    <div class="sheet-pronunciation" id="sheetPron">
+      <span class="pron-label">Say:</span>
+      <span class="pron-text" id="sheetPronText"></span>
+    </div>
+
+    <div class="sheet-meta" id="sheetMeta"></div>
+
+    <div class="sheet-section-title">Key Ingredients</div>
+    <div class="ingredients-list" id="sheetIngredients"></div>
+
+    <div class="sheet-section-title">About</div>
+    <p class="sheet-description" id="sheetDesc"></p>
+
+    <button class="speak-btn" id="sheetSpeakBtn" onclick="speakFromSheet()">
+      <span>🔊</span>
+      <span>
+        Tap to Pronounce
+        <span class="speak-btn-sub">Play Vietnamese name out loud</span>
+      </span>
+    </button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// DISH DATA
+// ═══════════════════════════════════════════════
+const dishes = [
+  {
+    id: "pho-bo",
+    vi: "Phở bò",
+    en: "Beef Noodle Soup",
+    pron: "fuh baw",
+    region: "North",
+    cities: ["Hanoi"],
+    types: ["Noodle Soup", "Beef"],
+    ingredients: ["rice noodles", "beef broth", "star anise", "cinnamon", "beef slices", "green onions", "basil", "lime", "bean sprouts", "hoisin sauce"],
+    desc: "Vietnam's most iconic dish. A fragrant broth simmered for hours with spices, served with silky rice noodles and thinly sliced beef. Order 'Phở tái' for rare beef, 'Phở chín' for well-done.",
+    emoji: "🍜",
+    img: "images/pho-bo.jpg",
+    audio: "audio/pho-bo.mp3"
+  },
+  {
+    id: "banh-mi",
+    vi: "Bánh mì",
+    en: "Vietnamese Sandwich",
+    pron: "bahn mee",
+    region: "South",
+    cities: ["Ho Chi Minh"],
+    types: ["Sandwich", "Pork", "Chicken"],
+    ingredients: ["baguette", "pâté", "pork", "pickled daikon", "pickled carrot", "cucumber", "cilantro", "chili", "mayonnaise"],
+    desc: "A crispy French-Vietnamese baguette stuffed with meats, pickled vegetables and fresh herbs. One of the world's greatest street food sandwiches. Costs about 20,000–40,000 VND.",
+    emoji: "🥖",
+    img: "images/banh-mi.jpg",
+    audio: "audio/banh-mi.mp3"
+  },
+  {
+    id: "bun-bo-hue",
+    vi: "Bún bò Huế",
+    en: "Spicy Beef Noodle Soup",
+    pron: "boon baw hway",
+    region: "Central",
+    cities: ["Hue"],
+    types: ["Noodle Soup", "Beef", "Spicy"],
+    ingredients: ["thick round noodles", "lemongrass broth", "beef shank", "pork knuckle", "shrimp paste", "chili oil", "banana blossom", "mint", "lime"],
+    desc: "Considered by many to be superior even to Phở. A fiery, lemongrass-scented broth with thick round noodles and tender beef. The shrimp paste gives it a unique depth. Not for the spice-averse.",
+    emoji: "🌶️",
+    img: "images/bun-bo-hue.jpg",
+    audio: "audio/bun-bo-hue.mp3"
+  },
+  {
+    id: "cao-lau",
+    vi: "Cao lầu",
+    en: "Hoi An Noodles",
+    pron: "cow loh",
+    region: "Central",
+    cities: ["Hoi An"],
+    types: ["Noodles", "Pork"],
+    ingredients: ["thick chewy noodles", "char siu pork", "pork crackling", "bean sprouts", "herbs", "star anise broth"],
+    desc: "Unique to Hoi An — supposedly only made correctly with water from the town's ancient wells. Thick, chewy noodles with BBQ pork and crunchy crackling in a small amount of broth.",
+    emoji: "🍝",
+    img: "images/cao-lau.jpg",
+    audio: "audio/cao-lau.mp3"
+  },
+  {
+    id: "mi-quang",
+    vi: "Mì Quảng",
+    en: "Quang Noodles",
+    pron: "mee kwang",
+    region: "Central",
+    cities: ["Da Nang"],
+    types: ["Noodles", "Shrimp", "Pork"],
+    ingredients: ["turmeric noodles", "shrimp", "pork", "quail eggs", "peanuts", "sesame crackers", "banana flower", "herbs", "minimal broth"],
+    desc: "Da Nang's signature dish — wide turmeric-yellow noodles with shrimp, pork, and a small splash of rich broth. Served with peanuts, crispy rice crackers, and a pile of fresh herbs.",
+    emoji: "🟡",
+    img: "images/mi-quang.jpg",
+    audio: "audio/mi-quang.mp3"
+  },
+  {
+    id: "banh-xeo",
+    vi: "Bánh xèo",
+    en: "Sizzling Crepe",
+    pron: "bahn say-oh",
+    region: "South",
+    cities: ["Ho Chi Minh", "Da Nang"],
+    types: ["Crepe", "Shrimp", "Pork"],
+    ingredients: ["rice flour batter", "turmeric", "coconut milk", "shrimp", "pork belly", "bean sprouts", "spring onion", "lettuce", "herbs", "dipping sauce"],
+    desc: "Named after the loud sizzle it makes when batter hits the pan. A crispy golden crepe stuffed with shrimp, pork and bean sprouts, wrapped in lettuce with fresh herbs and dipped in nước chấm.",
+    emoji: "🥞",
+    img: "images/banh-xeo.jpg",
+    audio: "audio/banh-xeo.mp3"
+  },
+  {
+    id: "goi-cuon",
+    vi: "Gỏi cuốn",
+    en: "Fresh Spring Rolls",
+    pron: "goy koo-un",
+    region: "South",
+    cities: ["Ho Chi Minh"],
+    types: ["Spring Roll", "Shrimp", "Pork"],
+    ingredients: ["rice paper", "cooked shrimp", "pork slices", "rice vermicelli", "lettuce", "mint", "coriander", "hoisin peanut dipping sauce"],
+    desc: "Light, fresh and healthy. Translucent rice paper rolls filled with shrimp, pork, herbs, and vermicelli. Perfect as a starter. Always served with a peanut-hoisin dipping sauce.",
+    emoji: "🌯",
+    img: "images/goi-cuon.jpg",
+    audio: "audio/goi-cuon.mp3"
+  },
+  {
+    id: "cha-gio",
+    vi: "Chả giò",
+    en: "Fried Spring Rolls",
+    pron: "cha yaw",
+    region: "South",
+    cities: ["Ho Chi Minh"],
+    types: ["Spring Roll", "Fried", "Pork"],
+    ingredients: ["rice paper", "minced pork", "crab meat", "glass noodles", "wood ear mushroom", "taro", "carrot", "nước chấm"],
+    desc: "Crispy fried spring rolls packed with a savory pork and vegetable filling. The southern Vietnamese version uses rice paper wrappers that shatter when you bite them. Always eaten with nước chấm.",
+    emoji: "🥟",
+    img: "images/cha-gio.jpg",
+    audio: "audio/cha-gio.mp3"
+  },
+  {
+    id: "bun-cha",
+    vi: "Bún chả",
+    en: "Grilled Pork & Noodles",
+    pron: "boon chah",
+    region: "North",
+    cities: ["Hanoi"],
+    types: ["Grilled", "Pork", "Noodles"],
+    ingredients: ["rice vermicelli", "charcoal-grilled pork patties", "pork belly", "fish sauce broth", "papaya", "carrot", "herbs", "garlic", "chili"],
+    desc: "Hanoi's beloved lunch dish, made famous when Obama ate it with Anthony Bourdain. Grilled smoky pork patties and belly in a sweet vinegary fish sauce broth, served with cool vermicelli noodles.",
+    emoji: "🥩",
+    img: "images/bun-cha.jpg",
+    audio: "audio/bun-cha.mp3"
+  },
+  {
+    id: "com-tam",
+    vi: "Cơm tấm",
+    en: "Broken Rice",
+    pron: "kum tum",
+    region: "South",
+    cities: ["Ho Chi Minh"],
+    types: ["Rice", "Pork", "Grilled"],
+    ingredients: ["broken rice", "grilled pork chop", "shredded pork skin", "steamed egg cake", "fish sauce", "pickled vegetables", "scallion oil"],
+    desc: "Saigon's breakfast of champions. Fragrant broken rice (smaller grains = better texture) topped with grilled pork chop, shredded pork skin, and a steamed egg cake. A perfect plate for about 30,000 VND.",
+    emoji: "🍚",
+    img: "images/com-tam.jpg",
+    audio: "audio/com-tam.mp3"
+  },
+  {
+    id: "banh-cuon",
+    vi: "Bánh cuốn",
+    en: "Steamed Rice Rolls",
+    pron: "bahn koo-un",
+    region: "North",
+    cities: ["Hanoi"],
+    types: ["Rice Roll", "Pork", "Steamed"],
+    ingredients: ["rice flour sheets", "minced pork", "wood ear mushroom", "fried shallots", "bean sprouts", "cucumber", "herbs", "fish sauce"],
+    desc: "Silky thin rice flour sheets, freshly steamed and filled with seasoned minced pork and mushrooms, topped with crispy fried shallots. Best eaten for breakfast in Hanoi.",
+    emoji: "🫔",
+    img: "images/banh-cuon.jpg",
+    audio: "audio/banh-cuon.mp3"
+  },
+  {
+    id: "hu-tieu",
+    vi: "Hủ tiếu",
+    en: "Southern Noodle Soup",
+    pron: "hoo tee-ow",
+    region: "South",
+    cities: ["Ho Chi Minh", "Can Tho"],
+    types: ["Noodle Soup", "Pork", "Shrimp"],
+    ingredients: ["thin rice noodles", "clear pork broth", "shrimp", "pork slices", "quail eggs", "fried garlic", "bean sprouts", "chili", "lime"],
+    desc: "The south's answer to Phở — a clear, delicate pork and seafood broth with thin rice noodles. Can be ordered 'khô' (dry, like a salad) or 'nước' (with soup). Often eaten for breakfast.",
+    emoji: "🦐",
+    img: "images/hu-tieu.jpg",
+    audio: "audio/hu-tieu.mp3"
+  },
+  {
+    id: "bun-rieu",
+    vi: "Bún riêu",
+    en: "Crab Noodle Soup",
+    pron: "boon ree-ow",
+    region: "North",
+    cities: ["Hanoi"],
+    types: ["Noodle Soup", "Crab", "Tomato"],
+    ingredients: ["rice vermicelli", "crab meat", "crab paste", "tomatoes", "tofu", "pork", "shrimp paste", "fried shallots", "herbs", "lime"],
+    desc: "A tomato-red, tangy broth with fluffy crab meat balls, tofu, and pork. The sour notes come from tamarind or tomatoes. A refreshing change from heavier broth-based soups.",
+    emoji: "🦀",
+    img: "images/bun-rieu.jpg",
+    audio: "audio/bun-rieu.mp3"
+  },
+  {
+    id: "canh-chua",
+    vi: "Canh chua",
+    en: "Sour Fish Soup",
+    pron: "kahn choo-ah",
+    region: "South",
+    cities: ["Ho Chi Minh", "Can Tho"],
+    types: ["Soup", "Fish", "Sour"],
+    ingredients: ["fish (catfish or snakehead)", "tamarind", "tomatoes", "pineapple", "bean sprouts", "taro stem", "okra", "dill", "elephant ear taro"],
+    desc: "The heart of a Vietnamese family meal. A bright, tangy tamarind-based soup with fresh fish, pineapple, tomatoes, and vegetables. Sour, sweet, and savory all at once. Serve with steamed rice.",
+    emoji: "🐟",
+    img: "images/canh-chua.jpg",
+    audio: "audio/canh-chua.mp3"
+  },
+  {
+    id: "banh-khot",
+    vi: "Bánh khọt",
+    en: "Mini Savory Pancakes",
+    pron: "bahn khote",
+    region: "South",
+    cities: ["Vung Tau"],
+    types: ["Pancake", "Shrimp", "Coconut"],
+    ingredients: ["rice flour", "coconut milk", "turmeric", "shrimp", "mung beans", "fried shallots", "lettuce", "herbs", "dipping sauce"],
+    desc: "Tiny, crispy-edged coconut rice pancakes topped with a whole shrimp, made in special cast iron pans. A specialty of Vung Tau. Wrap each one in lettuce with fresh herbs.",
+    emoji: "🥞",
+    img: "images/banh-khot.jpg",
+    audio: "audio/banh-khot.mp3"
+  },
+  {
+    id: "banh-beo",
+    vi: "Bánh bèo",
+    en: "Steamed Water Fern Cakes",
+    pron: "bahn bay-oh",
+    region: "Central",
+    cities: ["Hue"],
+    types: ["Steamed Cake", "Shrimp"],
+    ingredients: ["rice flour", "tapioca starch", "dried shrimp floss", "fried shallots", "pork rinds", "scallion oil", "fish sauce"],
+    desc: "Hue's beloved snack — small steamed rice cakes served in their little ceramic dishes, topped with dried shrimp floss, pork rinds, and scallion oil. Eaten by spooning from the dish.",
+    emoji: "🫙",
+    img: "images/banh-beo.jpg",
+    audio: "audio/banh-beo.mp3"
+  },
+  {
+    id: "che",
+    vi: "Chè",
+    en: "Sweet Dessert Soup",
+    pron: "chay",
+    region: "South",
+    cities: ["Ho Chi Minh", "Hue"],
+    types: ["Dessert", "Sweet", "Coconut"],
+    ingredients: ["mung beans", "black-eyed peas", "taro", "coconut milk", "tapioca pearls", "pandan jelly", "crushed ice", "palm sugar"],
+    desc: "Vietnamese sweet soups and puddings — served hot or cold, with hundreds of varieties. 'Chè ba màu' (three-color dessert) is the most famous: layers of mung bean, jelly, and coconut milk over ice.",
+    emoji: "🍮",
+    img: "images/che.jpg",
+    audio: "audio/che.mp3"
+  },
+  {
+    id: "bo-luc-lac",
+    vi: "Bò lúc lắc",
+    en: "Shaking Beef",
+    pron: "baw look luck",
+    region: "South",
+    cities: ["Ho Chi Minh"],
+    types: ["Beef", "Stir-fry", "Grilled"],
+    ingredients: ["beef tenderloin", "garlic", "soy sauce", "oyster sauce", "black pepper", "butter", "watercress", "lime-pepper dipping salt", "pickled onion"],
+    desc: "Tender cubes of beef wok-tossed (shaken) with garlic and butter in a scorching hot wok, served on a bed of watercress. Dip each cube in lime juice with black salt and pepper. A showstopper.",
+    emoji: "🥩",
+    img: "images/bo-luc-lac.jpg",
+    audio: "audio/bo-luc-lac.mp3"
+  },
+  {
+    id: "oc",
+    vi: "Ốc",
+    en: "Snails & Shellfish",
+    pron: "oke",
+    region: "South",
+    cities: ["Ho Chi Minh"],
+    types: ["Seafood", "Shellfish", "Spicy"],
+    ingredients: ["various snails", "clams", "mussels", "lemongrass", "chili", "tamarind", "salt & chili", "peanuts", "fish sauce"],
+    desc: "A quintessential Saigon night-out experience. Sit at a plastic table, crack open shellfish and snails cooked in fragrant sauces (tamarind, butter, salt & chili). Order 'ốc hút' for suck-out snails.",
+    emoji: "🐚",
+    img: "images/oc.jpg",
+    audio: "audio/oc.mp3"
+  },
+  {
+    id: "chao-ga",
+    vi: "Cháo gà",
+    en: "Chicken Congee",
+    pron: "chow gah",
+    region: "North",
+    cities: ["Hanoi", "Ho Chi Minh"],
+    types: ["Porridge", "Chicken", "Comfort Food"],
+    ingredients: ["jasmine rice", "chicken", "ginger", "fish sauce", "fried shallots", "spring onions", "white pepper", "lime", "ginger soy dipping sauce"],
+    desc: "Silky smooth rice porridge with hand-pulled chicken, aromatic ginger, and a shower of fried shallots and scallions. The ultimate Vietnamese comfort food — eaten for breakfast, hangover cure, or when sick.",
+    emoji: "🍲",
+    img: "images/chao-ga.jpg",
+    audio: "audio/chao-ga.mp3"
+  },
+
+  // ── LEGAL NOMADS PICKS ──────────────────────
+  {
+    id: "pho-ga",
+    vi: "Phở gà",
+    en: "Chicken Pho",
+    pron: "fuh gah",
+    region: "North",
+    cities: ["Hanoi", "Ho Chi Minh"],
+    types: ["Noodle Soup", "Chicken"],
+    ingredients: ["rice noodles", "chicken broth", "poached chicken", "ginger", "star anise", "fried shallots", "spring onions", "basil", "lime", "chili"],
+    desc: "The lighter, cleaner sibling of beef pho. A delicate golden broth with tender pulled chicken. Jodi Ettenberg's go-to when sick — 'all I want is chicken noodle soup, and this is the Vietnamese version done right.'",
+    emoji: "🐓",
+    img: "images/pho-ga.jpg",
+    audio: "audio/pho-ga.mp3"
+  },
+  {
+    id: "bun-thit-nuong",
+    vi: "Bún thịt nướng",
+    en: "Grilled Pork Vermicelli",
+    pron: "boon tit noong",
+    region: "South",
+    cities: ["Ho Chi Minh"],
+    types: ["Noodles", "Pork", "Grilled"],
+    ingredients: ["rice vermicelli", "charcoal-grilled marinated pork", "fried spring rolls", "pickled daikon", "carrot", "cucumber", "crushed peanuts", "fried shallots", "fresh herbs", "nước chấm"],
+    desc: "A Saigon staple abbreviated 'BTN' by food insiders. A bowl of cool vermicelli topped with smoky grilled pork, crispy spring rolls, pickled veg, and herbs — all drenched in nước chấm dipping sauce. Perfect any time of day.",
+    emoji: "🥗",
+    img: "images/bun-thit-nuong.jpg",
+    audio: "audio/bun-thit-nuong.mp3"
+  },
+  {
+    id: "bun-mam",
+    vi: "Bún mắm",
+    en: "Fermented Fish Noodle Soup",
+    pron: "boon mahm",
+    region: "South",
+    cities: ["Ho Chi Minh", "Can Tho"],
+    types: ["Noodle Soup", "Seafood", "Pork"],
+    ingredients: ["thick rice noodles", "fermented fish paste broth", "shrimp", "pork belly", "squid", "eggplant", "lemongrass", "fresh herbs", "banana blossom", "bean sprouts"],
+    desc: "Jodi's original reason for falling in love with Saigon — a 'sweet-and-sour' fermented fish broth that sounds alarming but tastes extraordinary. Rich, funky, and complex. Often full of locals, tourists walk right past it.",
+    emoji: "🦑",
+    img: "images/bun-mam.jpg",
+    audio: "audio/bun-mam.mp3"
+  },
+  {
+    id: "banh-canh-cua",
+    vi: "Bánh canh cua",
+    en: "Thick Crab Noodle Soup",
+    pron: "bahn kahn koo-ah",
+    region: "South",
+    cities: ["Ho Chi Minh"],
+    types: ["Noodle Soup", "Crab", "Seafood"],
+    ingredients: ["thick tapioca noodles", "crab meat", "crab roe", "pork", "fish cake", "fried shallots", "spring onions", "white pepper", "chili"],
+    desc: "Vietnam's answer to udon. Bánh canh noodles are thick and chewy — made from tapioca or rice flour. The cua (crab) version is the most prized: a rich broth packed with chunky crab meat and roe. Deeply satisfying.",
+    emoji: "🦀",
+    img: "images/banh-canh-cua.jpg",
+    audio: "audio/banh-canh-cua.mp3"
+  },
+  {
+    id: "bot-chien",
+    vi: "Bột chiên",
+    en: "Fried Rice Cakes",
+    pron: "boat chee-en",
+    region: "South",
+    cities: ["Ho Chi Minh"],
+    types: ["Fried", "Snack", "Street Food"],
+    ingredients: ["rice flour cakes", "egg", "green onions", "soy sauce", "chili sauce", "bean sprouts", "dried shrimp"],
+    desc: "A greasy, gloriously satisfying Saigon street snack. Chunky squares of rice flour cake fried in lard until crispy, then cracked eggs on top and tossed with green onions. Similar to Singapore's chai tow kueh but distinctly Vietnamese.",
+    emoji: "🟨",
+    img: "images/bot-chien.jpg",
+    audio: "audio/bot-chien.mp3"
+  },
+  {
+    id: "bo-la-lot",
+    vi: "Bò lá lốt",
+    en: "Beef in Betel Leaves",
+    pron: "baw lah lote",
+    region: "South",
+    cities: ["Ho Chi Minh"],
+    types: ["Beef", "Grilled", "Street Food"],
+    ingredients: ["minced beef", "lemongrass", "garlic", "shallots", "fish sauce", "betel leaves", "rice paper", "vermicelli", "fresh herbs", "peanut hoisin sauce"],
+    desc: "Seasoned minced beef and lemongrass wrapped in fragrant betel leaves and grilled over charcoal. The leaves impart a distinctive peppery, herbal char. Served with rice paper for rolling, herbs, and dipping sauce. Unmissable.",
+    emoji: "🍃",
+    img: "images/bo-la-lot.jpg",
+    audio: "audio/bo-la-lot.mp3"
+  },
+  {
+    id: "bun-moc",
+    vi: "Bún mộc",
+    en: "Mushroom Pork Noodle Soup",
+    pron: "boon moke",
+    region: "North",
+    cities: ["Hanoi"],
+    types: ["Noodle Soup", "Pork", "Mushroom"],
+    ingredients: ["rice vermicelli", "clear pork broth", "pork paste balls", "mushrooms", "pork belly", "fried tofu", "shallots", "spring onions", "white pepper"],
+    desc: "Jodi's go-to reset soup in Saigon — a gentle, clear pork broth with springy pork paste balls and mushrooms. Not flashy, just deeply comforting. Perfect when you're overwhelmed by stronger flavors or just need something quiet.",
+    emoji: "🍄",
+    img: "images/bun-moc.jpg",
+    audio: "audio/bun-moc.mp3"
+  },
+  {
+    id: "com-hen",
+    vi: "Cơm hến",
+    en: "Baby Clam Rice",
+    pron: "kum hen",
+    region: "Central",
+    cities: ["Hue"],
+    types: ["Rice", "Seafood", "Clam"],
+    ingredients: ["cold rice", "tiny baby clams", "pork skin", "fried peanuts", "sesame", "banana blossom", "fresh herbs", "chili", "fermented shrimp paste", "lemongrass"],
+    desc: "One of Hue's most beloved and unusual dishes — cold leftover rice topped with tiny baby clams stir-fried in lemongrass, fermented shrimp paste, and chili. Loud, funky, and complex. Eaten for breakfast by locals on the Perfume River islands.",
+    emoji: "🐚",
+    img: "images/com-hen.jpg",
+    audio: "audio/com-hen.mp3"
+  },
+  {
+    id: "bun-hen",
+    vi: "Bún hến",
+    en: "Baby Clam Noodles",
+    pron: "boon hen",
+    region: "Central",
+    cities: ["Hue"],
+    types: ["Noodles", "Seafood", "Clam"],
+    ingredients: ["thin rice vermicelli", "tiny baby clams", "lemongrass", "fermented shrimp paste", "chili", "peanuts", "banana blossom", "fresh herbs", "bean sprouts"],
+    desc: "The noodle version of cơm hến — same intensely flavored baby clam topping (lemongrass, shrimp paste, chili) but served over thin vermicelli instead of cold rice. A Hue specialty that Jodi sought out on her third day in the city.",
+    emoji: "🦪",
+    img: "images/bun-hen.jpg",
+    audio: "audio/bun-hen.mp3"
+  },
+  {
+    id: "nem-lui",
+    vi: "Nem lui",
+    en: "Lemongrass Pork Skewers",
+    pron: "nem loo-ee",
+    region: "Central",
+    cities: ["Hue"],
+    types: ["Grilled", "Pork", "Skewer"],
+    ingredients: ["minced pork", "lemongrass stalks", "garlic", "shallots", "chili", "rice paper", "fresh herbs", "star fruit", "green banana", "hoisin peanut sauce"],
+    desc: "Pork seasoned with garlic and lemongrass, moulded around lemongrass stalks and grilled over charcoal. Wrap in rice paper with fresh herbs, star fruit slices, and green banana. The lemongrass skewer perfumes the meat as it cooks.",
+    emoji: "🍢",
+    img: "images/nem-lui.jpg",
+    audio: "audio/nem-lui.mp3"
+  },
+  {
+    id: "banh-trang-nuong",
+    vi: "Bánh tráng nướng",
+    en: "Vietnamese Rice Pizza",
+    pron: "bahn trang noong",
+    region: "Central",
+    cities: ["Da Lat", "Hue"],
+    types: ["Street Food", "Snack", "Egg"],
+    ingredients: ["rice paper", "egg", "dried shrimp", "spring onions", "pork floss", "chili sauce", "mayonnaise", "quail egg"],
+    desc: "Street vendors grill a rice paper cracker over coals, crack an egg on top, scatter dried shrimp, spring onions and pork floss. The result is a crispy 'pizza' — crunchy, eggy, savory, and impossible to stop eating. A Da Lat icon.",
+    emoji: "🍕",
+    img: "images/banh-trang-nuong.jpg",
+    audio: "audio/banh-trang-nuong.mp3"
+  },
+  {
+    id: "banh-ep",
+    vi: "Bánh ép",
+    en: "Pressed Rice Pancake",
+    pron: "bahn ep",
+    region: "Central",
+    cities: ["Hue"],
+    types: ["Street Food", "Snack", "Pork"],
+    ingredients: ["thin rice pancake", "pork belly", "quail egg", "dried shrimp", "spring onion", "soy sauce", "chili"],
+    desc: "A Hue street snack that stopped Jodi before she even made it into the Old City gates. A thin rice wafer pressed flat on a hot iron griddle with pork, egg, and dried shrimp until crispy. Eaten folded, straight from the griddle.",
+    emoji: "🫓",
+    img: "images/banh-ep.jpg",
+    audio: "audio/banh-ep.mp3"
+  }
+];
+
+// ═══════════════════════════════════════════════
+// FILTER CONFIG
+// ═══════════════════════════════════════════════
+const filterGroups = {
+  all: [],
+  region: [
+    { key: "North",   label: "🧧 North",   icon: "🧧" },
+    { key: "Central", label: "🌸 Central",  icon: "🌸" },
+    { key: "South",   label: "🌴 South",    icon: "🌴" }
+  ],
+  city: [
+    { key: "Hanoi",         label: "🏛 Hanoi",         icon: "🏛" },
+    { key: "Ho Chi Minh",   label: "🌆 Saigon",        icon: "🌆" },
+    { key: "Hue",           label: "🏯 Hue",           icon: "🏯" },
+    { key: "Hoi An",        label: "🏮 Hoi An",        icon: "🏮" },
+    { key: "Da Nang",       label: "🌊 Da Nang",       icon: "🌊" },
+    { key: "Vung Tau",      label: "⛱ Vung Tau",      icon: "⛱" },
+    { key: "Can Tho",       label: "🚤 Can Tho",       icon: "🚤" },
+    { key: "Da Lat",        label: "🌿 Da Lat",        icon: "🌿" }
+  ],
+  type: [
+    { key: "Noodle Soup", label: "🍜 Noodle Soup", icon: "🍜" },
+    { key: "Noodles",     label: "🍝 Noodles",     icon: "🍝" },
+    { key: "Rice",        label: "🍚 Rice",         icon: "🍚" },
+    { key: "Spring Roll", label: "🌯 Spring Roll",  icon: "🌯" },
+    { key: "Grilled",     label: "🔥 Grilled",      icon: "🔥" },
+    { key: "Shrimp",      label: "🦐 Shrimp",       icon: "🦐" },
+    { key: "Beef",        label: "🥩 Beef",         icon: "🥩" },
+    { key: "Pork",        label: "🐷 Pork",         icon: "🐷" },
+    { key: "Seafood",     label: "🦞 Seafood",      icon: "🦞" },
+    { key: "Crab",        label: "🦀 Crab",         icon: "🦀" },
+    { key: "Spicy",       label: "🌶 Spicy",        icon: "🌶" },
+    { key: "Dessert",     label: "🍮 Dessert",      icon: "🍮" },
+    { key: "Comfort Food",label: "🫂 Comfort",      icon: "🫂" },
+    { key: "Skewer",      label: "🍢 Skewer",       icon: "🍢" },
+    { key: "Snack",       label: "🍿 Snack",         icon: "🍿" },
+    { key: "Mushroom",    label: "🍄 Mushroom",      icon: "🍄" },
+    { key: "Clam",        label: "🦪 Clam",          icon: "🦪" }
+  ]
+};
+
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+let activeGroup = "all";
+let activeFilter = null;
+let currentDish = null;
+let currentAudio = null;
+let sheetPlaying = false;
+
+// ═══════════════════════════════════════════════
+// AUDIO
+// ═══════════════════════════════════════════════
+function playDish(dish, fromSheet = false) {
+  // Stop any current audio
+  stopAudio();
+
+  const bar = document.getElementById("nowPlayingBar");
+  const barText = document.getElementById("nowPlayingText");
+
+  // Try file first, fallback to Web Speech API
+  const audio = new Audio(dish.audio);
+  audio.volume = 1.0;
+
+  audio.addEventListener("canplaythrough", () => {
+    currentAudio = audio;
+    audio.play().catch(() => speakFallback(dish, fromSheet));
+    showNowPlaying(dish.vi);
+    if (fromSheet) setSheetPlaying(true);
+  });
+
+  audio.addEventListener("ended", () => {
+    hideNowPlaying();
+    if (fromSheet) setSheetPlaying(false);
+    updateCardBadge(dish.id, false);
+    currentAudio = null;
+  });
+
+  audio.addEventListener("error", () => {
+    // File not found → use Web Speech API
+    speakFallback(dish, fromSheet);
+  });
+
+  // Set a short timeout: if audio doesn't load quickly, fallback
+  setTimeout(() => {
+    if (audio.readyState < 3) {
+      audio.onerror = null;
+      audio.oncanplaythrough = null;
+      speakFallback(dish, fromSheet);
+    }
+  }, 800);
+
+  updateCardBadge(dish.id, true);
+}
+
+function speakFallback(dish, fromSheet = false) {
+  if (!window.speechSynthesis) return;
+
+  const utter = new SpeechSynthesisUtterance(dish.vi);
+  utter.lang = "vi-VN";
+  utter.rate = 0.85;
+  utter.pitch = 1.0;
+  utter.volume = 1.0;
+
+  // Try to find a Vietnamese voice
+  const voices = speechSynthesis.getVoices();
+  const viVoice = voices.find(v => v.lang.startsWith("vi")) ||
+                  voices.find(v => v.lang.startsWith("vi-VN"));
+  if (viVoice) utter.voice = viVoice;
+
+  utter.onstart = () => {
+    showNowPlaying(dish.vi);
+    if (fromSheet) setSheetPlaying(true);
+  };
+
+  utter.onend = () => {
+    hideNowPlaying();
+    if (fromSheet) setSheetPlaying(false);
+    updateCardBadge(dish.id, false);
+  };
+
+  utter.onerror = () => {
+    hideNowPlaying();
+    if (fromSheet) setSheetPlaying(false);
+    updateCardBadge(dish.id, false);
+  };
+
+  speechSynthesis.speak(utter);
+}
+
+function stopAudio() {
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio = null;
+  }
+  if (window.speechSynthesis) {
+    speechSynthesis.cancel();
+  }
+  hideNowPlaying();
+  setSheetPlaying(false);
+  // Clear all card badges
+  document.querySelectorAll(".play-badge.playing").forEach(b => b.classList.remove("playing"));
+}
+
+function updateCardBadge(id, playing) {
+  const card = document.querySelector(`[data-id="${id}"] .play-badge`);
+  if (card) card.classList.toggle("playing", playing);
+}
+
+function showNowPlaying(text) {
+  const bar = document.getElementById("nowPlayingBar");
+  document.getElementById("nowPlayingText").textContent = text;
+  bar.classList.add("visible");
+}
+
+function hideNowPlaying() {
+  document.getElementById("nowPlayingBar").classList.remove("visible");
+}
+
+function setSheetPlaying(playing) {
+  sheetPlaying = playing;
+  const btn = document.getElementById("sheetSpeakBtn");
+  if (!btn) return;
+  btn.classList.toggle("playing", playing);
+  btn.innerHTML = playing
+    ? `<span>⏹</span><span>Playing...<span class="speak-btn-sub">Tap to stop</span></span>`
+    : `<span>🔊</span><span>Tap to Pronounce<span class="speak-btn-sub">Play Vietnamese name out loud</span></span>`;
+}
+
+function speakFromSheet() {
+  if (sheetPlaying) {
+    stopAudio();
+  } else if (currentDish) {
+    playDish(currentDish, true);
+  }
+}
+
+// ═══════════════════════════════════════════════
+// FILTER RENDERING
+// ═══════════════════════════════════════════════
+function renderFilterTabs() {
+  document.querySelectorAll(".filter-tab").forEach(tab => {
+    tab.addEventListener("click", () => {
+      activeGroup = tab.dataset.group;
+      activeFilter = null;
+      document.querySelectorAll(".filter-tab").forEach(t => t.classList.remove("active"));
+      tab.classList.add("active");
+      renderPills();
+      renderGrid();
+    });
+  });
+}
+
+function renderPills() {
+  const row = document.getElementById("pillsRow");
+  row.innerHTML = "";
+
+  if (activeGroup === "all") return;
+
+  const pills = filterGroups[activeGroup];
+  pills.forEach(p => {
+    const btn = document.createElement("button");
+    btn.className = "pill" + (activeFilter === p.key ? " active" : "");
+    btn.innerHTML = `<span class="pill-icon">${p.icon}</span> ${p.key}`;
+    btn.onclick = () => {
+      activeFilter = activeFilter === p.key ? null : p.key;
+      renderPills();
+      renderGrid();
+    };
+    row.appendChild(btn);
+  });
+}
+
+// ═══════════════════════════════════════════════
+// GRID RENDERING
+// ═══════════════════════════════════════════════
+function getFilteredDishes() {
+  if (activeGroup === "all" || !activeFilter) return dishes;
+
+  return dishes.filter(d => {
+    if (activeGroup === "region") return d.region === activeFilter;
+    if (activeGroup === "city")   return d.cities.includes(activeFilter);
+    if (activeGroup === "type")   return d.types.includes(activeFilter);
+    return true;
+  });
+}
+
+function renderGrid() {
+  const grid = document.getElementById("grid");
+  const label = document.getElementById("resultsLabel");
+  const countBadge = document.getElementById("dishCount");
+  const filtered = getFilteredDishes();
+
+  countBadge.textContent = filtered.length;
+
+  if (filtered.length === 0) {
+    label.textContent = "No dishes match";
+    grid.innerHTML = `
+      <div class="empty-state">
+        <span class="emoji">🥢</span>
+        <p>No dishes found for this filter.<br>Try a different category!</p>
+      </div>`;
+    return;
+  }
+
+  const filterLabel = activeFilter
+    ? `${filtered.length} ${activeFilter} dish${filtered.length !== 1 ? "es" : ""}`
+    : `All ${filtered.length} dishes`;
+  label.textContent = `Showing ${filterLabel}`;
+
+  grid.innerHTML = filtered.map(d => `
+    <div class="card" data-id="${d.id}" onclick="openSheet('${d.id}'); playDish(dishes.find(x=>x.id==='${d.id}'))">
+      <div class="card-img-wrap">
+        <div class="img-placeholder">${d.emoji}</div>
+        <img class="loading" src="${d.img}" alt="${d.en}"
+          onload="this.classList.remove('loading');this.classList.add('loaded')"
+          onerror="this.style.display='none'">
+        <div class="play-badge">🔊</div>
+      </div>
+      <div class="card-body">
+        <div class="card-vi">${d.vi}</div>
+        <div class="card-en">${d.en}</div>
+        <div class="card-tags">
+          <span class="tag region">${d.region}</span>
+          ${d.cities.map(c => `<span class="tag city">${c}</span>`).join("")}
+        </div>
+      </div>
+    </div>
+  `).join("");
+}
+
+// ═══════════════════════════════════════════════
+// DETAIL SHEET
+// ═══════════════════════════════════════════════
+function openSheet(id) {
+  const dish = dishes.find(d => d.id === id);
+  if (!dish) return;
+  currentDish = dish;
+
+  document.getElementById("sheetImg").src = dish.img;
+  document.getElementById("sheetImg").alt = dish.en;
+  document.getElementById("sheetImg").style.display = "";
+  document.getElementById("sheetViName").textContent = dish.vi;
+  document.getElementById("sheetEnName").textContent = dish.en;
+  document.getElementById("sheetPronText").textContent = dish.pron;
+  document.getElementById("sheetDesc").textContent = dish.desc;
+
+  // Meta chips
+  const meta = document.getElementById("sheetMeta");
+  meta.innerHTML = `
+    <span class="meta-chip region">🗺 ${dish.region}</span>
+    ${dish.cities.map(c => `<span class="meta-chip city">📍 ${c}</span>`).join("")}
+    ${dish.types.map(t => `<span class="meta-chip type">${t}</span>`).join("")}
+  `;
+
+  // Ingredients
+  document.getElementById("sheetIngredients").innerHTML =
+    dish.ingredients.map(i => `<span class="ingredient-chip">${i}</span>`).join("");
+
+  setSheetPlaying(false);
+
+  document.getElementById("sheetOverlay").classList.add("open");
+  document.getElementById("sheet").classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+
+function closeSheet() {
+  stopAudio();
+  document.getElementById("sheetOverlay").classList.remove("open");
+  document.getElementById("sheet").classList.remove("open");
+  document.body.style.overflow = "";
+  currentDish = null;
+}
+
+// Close sheet on escape
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") closeSheet();
+});
+
+// Swipe down to close sheet
+let touchStartY = 0;
+document.getElementById("sheet").addEventListener("touchstart", e => {
+  touchStartY = e.touches[0].clientY;
+}, { passive: true });
+
+document.getElementById("sheet").addEventListener("touchend", e => {
+  const dy = e.changedTouches[0].clientY - touchStartY;
+  if (dy > 80 && document.getElementById("sheet").scrollTop <= 0) {
+    closeSheet();
+  }
+}, { passive: true });
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+renderFilterTabs();
+renderPills();
+renderGrid();
+
+// Pre-load voices on iOS (must be triggered after a user gesture)
+document.addEventListener("touchstart", () => {
+  if (window.speechSynthesis) speechSynthesis.getVoices();
+}, { once: true });
+
+// ── PWA Service Worker ──
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js")
+      .then(reg => console.log("[SW] Registered:", reg.scope))
+      .catch(err => console.warn("[SW] Registration failed:", err));
+  });
+}
+</script>
+</body>
+</html>
