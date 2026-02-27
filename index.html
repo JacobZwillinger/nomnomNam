@@ -517,6 +517,146 @@
     @media (min-width: 900px) {
       .grid { grid-template-columns: repeat(4, 1fr); }
     }
+
+    /* ── MODE TABS (Dishes / Phrases) ── */
+    .mode-tabs {
+      display: flex;
+      gap: 6px;
+      padding-bottom: 10px;
+    }
+
+    .mode-tab {
+      flex: 1;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 9px 14px;
+      border-radius: 12px;
+      border: 1.5px solid var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .mode-tab.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+
+    /* ── SEARCH BAR ── */
+    .search-wrap {
+      display: flex;
+      align-items: center;
+      background: var(--surface2);
+      border-radius: 12px;
+      padding: 0 12px;
+      gap: 8px;
+      margin-bottom: 10px;
+      border: 1.5px solid var(--border);
+      transition: border-color 0.2s;
+    }
+
+    .search-wrap:focus-within { border-color: var(--accent); }
+
+    .search-icon { color: var(--text-muted); font-size: 15px; flex-shrink: 0; }
+
+    .search-input {
+      flex: 1;
+      background: none;
+      border: none;
+      color: var(--text);
+      font-size: 15px;
+      padding: 10px 0;
+      outline: none;
+    }
+
+    .search-input::placeholder { color: var(--text-muted); }
+
+    .search-clear {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 18px;
+      line-height: 1;
+      padding: 4px;
+      display: none;
+      border-radius: 50%;
+      transition: color 0.15s;
+    }
+
+    .search-clear.visible { display: block; }
+    .search-clear:hover { color: var(--text); }
+
+    /* ── PHRASE CARDS ── */
+    #phraseGrid { display: none; padding: 12px 16px 100px; }
+
+    .phrase-category-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+      padding: 18px 0 8px;
+    }
+
+    .phrase-category-label:first-child { padding-top: 4px; }
+
+    .phrase-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      cursor: pointer;
+      transition: transform 0.18s, box-shadow 0.18s;
+      border: 1px solid var(--border);
+      margin-bottom: 8px;
+    }
+
+    .phrase-card:active { transform: scale(0.98); }
+
+    .phrase-card.playing { border-color: var(--accent); background: rgba(232,93,63,0.07); }
+
+    .phrase-text { flex: 1; min-width: 0; }
+
+    .phrase-vi {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.3px;
+      margin-bottom: 3px;
+    }
+
+    .phrase-en {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .phrase-pron {
+      font-size: 12px;
+      font-style: italic;
+      color: var(--accent2);
+      font-weight: 600;
+    }
+
+    .phrase-play {
+      flex-shrink: 0;
+      width: 48px;
+      height: 48px;
+      background: var(--accent);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.15s, background 0.2s;
+    }
+
+    .phrase-card.playing .phrase-play { background: #c0392b; }
   </style>
 </head>
 <body>
@@ -529,23 +669,38 @@
       <h1>NomNom Nam</h1>
       <div class="subtitle">Tap any dish · Aunty will know what you want</div>
     </div>
-    <span class="dish-count" id="dishCount">48</span>
+    <span class="dish-count" id="dishCount">55</span>
   </div>
 
-  <div class="filter-tabs" id="filterTabs">
-    <button class="filter-tab active" data-group="all">All</button>
-    <button class="filter-tab" data-group="region">Region</button>
-    <button class="filter-tab" data-group="city">City</button>
-    <button class="filter-tab" data-group="type">Type</button>
+  <div class="mode-tabs">
+    <button class="mode-tab active" data-mode="dishes" onclick="setMode('dishes')">🍜 Dishes</button>
+    <button class="mode-tab" data-mode="phrases" onclick="setMode('phrases')">💬 Phrases</button>
   </div>
 
-  <div class="filters-row" id="pillsRow"></div>
+  <div id="dishControls">
+    <div class="filter-tabs" id="filterTabs">
+      <button class="filter-tab active" data-group="all">All</button>
+      <button class="filter-tab" data-group="region">Region</button>
+      <button class="filter-tab" data-group="city">City</button>
+      <button class="filter-tab" data-group="type">Type</button>
+    </div>
+    <div class="filters-row" id="pillsRow"></div>
+    <div class="search-wrap" id="searchWrap">
+      <span class="search-icon">⌕</span>
+      <input class="search-input" id="searchInput" type="search"
+        placeholder="Search dishes…"
+        oninput="onSearch(event)"
+        autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+      <button class="search-clear" id="searchClear" onclick="clearSearch()" aria-label="Clear">✕</button>
+    </div>
+  </div>
 </header>
 
-<!-- MAIN GRID -->
+<!-- MAIN GRID / PHRASES -->
 <main>
-  <div class="results-label" id="resultsLabel">Showing all 48 dishes</div>
+  <div class="results-label" id="resultsLabel"></div>
   <div class="grid" id="grid"></div>
+  <div id="phraseGrid"></div>
 </main>
 
 <!-- NOW PLAYING BAR -->
@@ -1273,6 +1428,104 @@ const dishes = [
     emoji: "🍜",
     img: "images/hu-tieu-my-tho.jpg",
     audio: "audio/hu-tieu-my-tho.mp3"
+  },
+  {
+    id: "banh-da-cua",
+    vi: "Bánh đa cua",
+    en: "Crab Red Noodle Soup",
+    pron: "bahn da koo-ah",
+    region: "North",
+    cities: ["Hai Phong"],
+    types: ["Noodle Soup", "Crab", "Seafood"],
+    ingredients: ["red rice noodles", "crab broth", "water spinach", "fried shallots", "cha la lot"],
+    desc: "A Hai Phong specialty with chewy red noodles and a sweet-savory crab broth. Commonly ordered at dedicated noodle shops.",
+    emoji: "🦀",
+    img: "images/banh-da-cua.jpg",
+    audio: "audio/banh-da-cua.mp3"
+  },
+  {
+    id: "banh-hoi",
+    vi: "Bánh hỏi",
+    en: "Woven Rice Vermicelli",
+    pron: "bahn hoy",
+    region: "Central",
+    cities: ["Quy Nhon"],
+    types: ["Noodles", "Pork", "Snack"],
+    ingredients: ["woven vermicelli sheets", "scallion oil", "grilled pork", "herbs", "fish sauce"],
+    desc: "Fine woven rice noodles brushed with scallion oil, often served with grilled pork and herbs.",
+    emoji: "🍜",
+    img: "images/banh-hoi.jpg",
+    audio: "audio/banh-hoi.mp3"
+  },
+  {
+    id: "bun-dau-mam-tom",
+    vi: "Bún đậu mắm tôm",
+    en: "Vermicelli, Tofu & Shrimp Paste",
+    pron: "boon dow mum tome",
+    region: "North",
+    cities: ["Hanoi"],
+    types: ["Noodles", "Tofu", "Street Food"],
+    ingredients: ["rice vermicelli", "fried tofu", "fermented shrimp paste", "pork", "herbs", "cucumber"],
+    desc: "A classic Hanoi tray: tofu, noodles, herbs, and pungent mắm tôm. Widely available at casual restaurants.",
+    emoji: "🍽️",
+    img: "images/bun-dau-mam-tom.jpg",
+    audio: "audio/bun-dau-mam-tom.mp3"
+  },
+  {
+    id: "bun-oc",
+    vi: "Bún ốc",
+    en: "Snail Noodle Soup",
+    pron: "boon oke",
+    region: "North",
+    cities: ["Hanoi"],
+    types: ["Noodle Soup", "Seafood", "Shellfish"],
+    ingredients: ["rice vermicelli", "snails", "tomato broth", "vinegar", "herbs", "chili"],
+    desc: "Tangy tomato-based noodle soup with snails, a staple breakfast and lunch dish in Hanoi.",
+    emoji: "🐚",
+    img: "images/bun-oc.jpg",
+    audio: "audio/bun-oc.mp3"
+  },
+  {
+    id: "bun-thang",
+    vi: "Bún thang",
+    en: "Hanoi Chicken & Egg Noodles",
+    pron: "boon thung",
+    region: "North",
+    cities: ["Hanoi"],
+    types: ["Noodle Soup", "Chicken", "Noodles"],
+    ingredients: ["rice vermicelli", "chicken", "egg ribbons", "pork floss", "clear broth", "herbs"],
+    desc: "A refined Hanoi noodle bowl layered with shredded toppings and clear aromatic broth.",
+    emoji: "🍲",
+    img: "images/bun-thang.jpg",
+    audio: "audio/bun-thang.mp3"
+  },
+  {
+    id: "banh-bot-loc",
+    vi: "Bánh bột lọc",
+    en: "Tapioca Shrimp Dumplings",
+    pron: "bahn bot lock",
+    region: "Central",
+    cities: ["Hue"],
+    types: ["Snack", "Shrimp", "Steamed"],
+    ingredients: ["tapioca dough", "shrimp", "pork belly", "fried shallots", "fish sauce"],
+    desc: "Chewy translucent dumplings filled with shrimp and pork, often wrapped in banana leaf in Hue.",
+    emoji: "🥟",
+    img: "images/banh-bot-loc.jpg",
+    audio: "audio/banh-bot-loc.mp3"
+  },
+  {
+    id: "banh-uot",
+    vi: "Bánh ướt",
+    en: "Wet Rice Sheets",
+    pron: "bahn oot",
+    region: "South",
+    cities: ["Ho Chi Minh"],
+    types: ["Rice Roll", "Pork", "Steamed"],
+    ingredients: ["steamed rice sheets", "pork", "bean sprouts", "fried shallots", "fish sauce"],
+    desc: "Thin steamed rice sheets served fresh, often with pork and herbs. Popular breakfast choice.",
+    emoji: "🫔",
+    img: "images/banh-uot.jpg",
+    audio: "audio/banh-uot.mp3"
   }
 ];
 
@@ -1295,7 +1548,10 @@ const filterGroups = {
     { key: "Vung Tau",      label: "⛱ Vung Tau",      icon: "⛱" },
     { key: "Can Tho",       label: "🚤 Can Tho",       icon: "🚤" },
     { key: "Da Lat",        label: "🌿 Da Lat",        icon: "🌿" },
-    { key: "My Tho",        label: "🛶 My Tho",        icon: "🛶" }
+    { key: "My Tho",        label: "🛶 My Tho",        icon: "🛶" },
+    { key: "Hai Phong",     label: "⚓ Hai Phong",      icon: "⚓" },
+    { key: "Quy Nhon",      label: "🏖 Quy Nhon",       icon: "🏖" },
+    { key: "Nha Trang",     label: "🌴 Nha Trang",      icon: "🌴" }
   ],
   type: [
     { key: "Noodle Soup", label: "🍜 Noodle Soup", icon: "🍜" },
@@ -1319,6 +1575,37 @@ const filterGroups = {
 };
 
 // ═══════════════════════════════════════════════
+// PHRASE DATA
+// ═══════════════════════════════════════════════
+const phrases = [
+  // ── ORDERING ──────────────────────────────
+  { id:"cho-toi-mot-to",    vi:"Cho tôi một tô",     en:"One bowl, please",        pron:"chaw toy moat toh",   category:"Ordering"   },
+  { id:"cho-toi-them",      vi:"Cho tôi thêm",        en:"A little more, please",   pron:"chaw toy tem",        category:"Ordering"   },
+  { id:"cho-them-rau",      vi:"Cho thêm rau",        en:"More herbs, please",      pron:"chaw tem rao",        category:"Ordering"   },
+  { id:"khong-cay",         vi:"Không cay",           en:"Not spicy",               pron:"khong kai",           category:"Ordering"   },
+  { id:"it-da",             vi:"Ít đá",               en:"Less ice",                pron:"it dah",              category:"Ordering"   },
+  { id:"khong-da",          vi:"Không đá",            en:"No ice",                  pron:"khong dah",           category:"Ordering"   },
+  // ── PAYING ────────────────────────────────
+  { id:"bao-nhieu-tien",    vi:"Bao nhiêu tiền?",     en:"How much?",               pron:"bow nyew tyen",       category:"Paying"     },
+  { id:"tinh-tien",         vi:"Tính tiền",           en:"Check, please",           pron:"ting tyen",           category:"Paying"     },
+  { id:"dat-qua",           vi:"Đắt quá",             en:"Too expensive!",          pron:"dat kwah",            category:"Paying"     },
+  // ── DIETARY ───────────────────────────────
+  { id:"khong-thit-heo",    vi:"Không thịt heo",      en:"No pork",                 pron:"khong tit hay-oh",    category:"Dietary"    },
+  { id:"khong-hai-san",     vi:"Không hải sản",       en:"No seafood",              pron:"khong hai san",       category:"Dietary"    },
+  { id:"toi-an-chay",       vi:"Tôi ăn chay",         en:"I'm vegetarian",          pron:"toy an chai",         category:"Dietary"    },
+  { id:"khong-dau-phong",   vi:"Không đậu phộng",     en:"No peanuts",              pron:"khong dow fong",      category:"Dietary"    },
+  // ── COMPLIMENTS ───────────────────────────
+  { id:"ngon-lam",          vi:"Ngon lắm!",           en:"Very delicious!",         pron:"ngon lum",            category:"Compliments"},
+  { id:"ngon-qua",          vi:"Ngon quá!",           en:"So good!",                pron:"ngon kwah",           category:"Compliments"},
+  { id:"them-nua",          vi:"Thêm nữa!",           en:"More!",                   pron:"tem noo-ah",          category:"Compliments"},
+  // ── BASICS ────────────────────────────────
+  { id:"xin-chao",          vi:"Xin chào",            en:"Hello",                   pron:"sin chow",            category:"Basics"     },
+  { id:"cam-on",            vi:"Cảm ơn",              en:"Thank you",               pron:"gahm un",             category:"Basics"     },
+  { id:"xin-loi",           vi:"Xin lỗi",             en:"Excuse me / Sorry",       pron:"sin loy",             category:"Basics"     },
+  { id:"o-day",             vi:"Ở đây",               en:"Here (pointing at food)", pron:"uh day",              category:"Basics"     },
+];
+
+// ═══════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════
 let activeGroup = "all";
@@ -1326,6 +1613,9 @@ let activeFilter = null;
 let currentDish = null;
 let currentAudio = null;
 let sheetPlaying = false;
+let searchQuery = "";
+let currentMode = "dishes"; // "dishes" | "phrases"
+let playingPhraseId = null;
 
 // ═══════════════════════════════════════════════
 // AUDIO
@@ -1455,6 +1745,115 @@ function speakFromSheet() {
 }
 
 // ═══════════════════════════════════════════════
+// MODE SWITCHING
+// ═══════════════════════════════════════════════
+function setMode(mode) {
+  currentMode = mode;
+  document.querySelectorAll(".mode-tab").forEach(t =>
+    t.classList.toggle("active", t.dataset.mode === mode)
+  );
+  const isDishes = mode === "dishes";
+  document.getElementById("dishControls").style.display = isDishes ? "" : "none";
+  document.getElementById("resultsLabel").style.display = isDishes ? "" : "none";
+  document.getElementById("grid").style.display = isDishes ? "" : "none";
+  document.getElementById("phraseGrid").style.display = isDishes ? "none" : "block";
+  if (isDishes) renderGrid();
+  else renderPhrases();
+  stopAudio();
+}
+
+// ═══════════════════════════════════════════════
+// SEARCH
+// ═══════════════════════════════════════════════
+function onSearch(e) {
+  searchQuery = e.target.value.toLowerCase();
+  document.getElementById("searchClear").classList.toggle("visible", searchQuery.length > 0);
+  renderGrid();
+}
+
+function clearSearch() {
+  document.getElementById("searchInput").value = "";
+  searchQuery = "";
+  document.getElementById("searchClear").classList.remove("visible");
+  document.getElementById("searchInput").focus();
+  renderGrid();
+}
+
+// ═══════════════════════════════════════════════
+// PHRASE PLAYBACK
+// ═══════════════════════════════════════════════
+function playPhrase(phrase) {
+  stopAudio();
+  playingPhraseId = phrase.id;
+  document.querySelectorAll(".phrase-card").forEach(c =>
+    c.classList.toggle("playing", c.dataset.id === phrase.id)
+  );
+
+  const audio = new Audio(`audio/phrases/${phrase.id}.mp3`);
+  audio.volume = 1.0;
+  audio.addEventListener("canplaythrough", () => {
+    currentAudio = audio;
+    audio.play().catch(() => phraseSpeakFallback(phrase));
+    showNowPlaying(phrase.vi);
+  });
+  audio.addEventListener("ended", () => {
+    currentAudio = null;
+    playingPhraseId = null;
+    hideNowPlaying();
+    document.querySelectorAll(".phrase-card").forEach(c => c.classList.remove("playing"));
+  });
+  audio.addEventListener("error", () => phraseSpeakFallback(phrase));
+  setTimeout(() => {
+    if (audio.readyState < 3) { audio.onerror = null; phraseSpeakFallback(phrase); }
+  }, 800);
+}
+
+function phraseSpeakFallback(phrase) {
+  if (!window.speechSynthesis) return;
+  const utter = new SpeechSynthesisUtterance(phrase.vi);
+  utter.lang = "vi-VN"; utter.rate = 0.8; utter.volume = 1;
+  utter.onstart = () => showNowPlaying(phrase.vi);
+  utter.onend = () => {
+    hideNowPlaying();
+    playingPhraseId = null;
+    document.querySelectorAll(".phrase-card").forEach(c => c.classList.remove("playing"));
+  };
+  speechSynthesis.speak(utter);
+}
+
+// ═══════════════════════════════════════════════
+// PHRASE RENDERING
+// ═══════════════════════════════════════════════
+const PHRASE_CATEGORIES = ["Ordering", "Paying", "Dietary", "Compliments", "Basics"];
+const CATEGORY_EMOJI = { Ordering:"🛎️", Paying:"💵", Dietary:"🥗", Compliments:"😋", Basics:"👋" };
+
+function renderPhrases() {
+  const grid = document.getElementById("phraseGrid");
+  const speakerSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="white"/>
+    <path d="M15.54 8.46a5 5 0 0 1 0 7.07" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M19.07 4.93a10 10 0 0 1 0 14.14" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>`;
+
+  grid.innerHTML = PHRASE_CATEGORIES.map(cat => {
+    const catPhrases = phrases.filter(p => p.category === cat);
+    return `
+      <div class="phrase-category-label">${CATEGORY_EMOJI[cat]} ${cat}</div>
+      ${catPhrases.map(p => `
+        <div class="phrase-card" data-id="${p.id}" onclick="playPhrase(phrases.find(x=>x.id==='${p.id}'))">
+          <div class="phrase-text">
+            <div class="phrase-vi">${p.vi}</div>
+            <div class="phrase-en">${p.en}</div>
+            <div class="phrase-pron">${p.pron}</div>
+          </div>
+          <div class="phrase-play">${speakerSVG}</div>
+        </div>
+      `).join("")}
+    `;
+  }).join("");
+}
+
+// ═══════════════════════════════════════════════
 // FILTER RENDERING
 // ═══════════════════════════════════════════════
 function renderFilterTabs() {
@@ -1493,15 +1892,30 @@ function renderPills() {
 // ═══════════════════════════════════════════════
 // GRID RENDERING
 // ═══════════════════════════════════════════════
-function getFilteredDishes() {
-  if (activeGroup === "all" || !activeFilter) return dishes;
+function stripDiacritics(s) {
+  return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+}
 
-  return dishes.filter(d => {
-    if (activeGroup === "region") return d.region === activeFilter;
-    if (activeGroup === "city")   return d.cities.includes(activeFilter);
-    if (activeGroup === "type")   return d.types.includes(activeFilter);
-    return true;
-  });
+function getFilteredDishes() {
+  let result = dishes;
+
+  if (activeGroup !== "all" && activeFilter) {
+    result = result.filter(d => {
+      if (activeGroup === "region") return d.region === activeFilter;
+      if (activeGroup === "city")   return d.cities.includes(activeFilter);
+      if (activeGroup === "type")   return d.types.includes(activeFilter);
+      return true;
+    });
+  }
+
+  if (searchQuery) {
+    const q = stripDiacritics(searchQuery);
+    result = result.filter(d =>
+      stripDiacritics(d.vi).includes(q) || d.en.toLowerCase().includes(q)
+    );
+  }
+
+  return result;
 }
 
 function renderGrid() {
@@ -1513,18 +1927,21 @@ function renderGrid() {
   countBadge.textContent = filtered.length;
 
   if (filtered.length === 0) {
-    label.textContent = "No dishes match";
+    const emptyMsg = searchQuery
+      ? `No dishes match "<strong>${searchQuery}</strong>"`
+      : "No dishes match this filter";
+    label.innerHTML = emptyMsg;
     grid.innerHTML = `
       <div class="empty-state">
         <span class="emoji">🥢</span>
-        <p>No dishes found for this filter.<br>Try a different category!</p>
+        <p>No dishes found.<br>Try a different search or filter!</p>
       </div>`;
     return;
   }
 
-  const filterLabel = activeFilter
-    ? `${filtered.length} ${activeFilter} dish${filtered.length !== 1 ? "es" : ""}`
-    : `All ${filtered.length} dishes`;
+  let filterLabel = `All ${filtered.length} dishes`;
+  if (searchQuery) filterLabel = `${filtered.length} result${filtered.length !== 1 ? "s" : ""} for "${searchQuery}"`;
+  else if (activeFilter) filterLabel = `${filtered.length} ${activeFilter} dish${filtered.length !== 1 ? "es" : ""}`;
   label.textContent = `Showing ${filterLabel}`;
 
   grid.innerHTML = filtered.map(d => `

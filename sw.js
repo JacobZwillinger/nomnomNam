@@ -1,7 +1,7 @@
 // NomNom Nam — Service Worker
 // Caches all assets for offline use (critical for travel!)
 
-const CACHE = "nomnomnam-v6";
+const CACHE = "nomnomnam-v8";
 
 const STATIC = [
   "./index.html",
@@ -57,7 +57,14 @@ const AUDIO = [
   "./audio/banh-chung.mp3",
   "./audio/banh-gio.mp3",
   "./audio/hu-tieu-nam-vang.mp3",
-  "./audio/hu-tieu-my-tho.mp3"
+  "./audio/hu-tieu-my-tho.mp3",
+  "./audio/banh-da-cua.mp3",
+  "./audio/banh-hoi.mp3",
+  "./audio/bun-dau-mam-tom.mp3",
+  "./audio/bun-oc.mp3",
+  "./audio/bun-thang.mp3",
+  "./audio/banh-bot-loc.mp3",
+  "./audio/banh-uot.mp3"
 ];
 
 // All dish images
@@ -109,7 +116,14 @@ const IMAGES = [
   "./images/banh-chung.jpg",
   "./images/banh-gio.jpg",
   "./images/hu-tieu-nam-vang.jpg",
-  "./images/hu-tieu-my-tho.jpg"
+  "./images/hu-tieu-my-tho.jpg",
+  "./images/banh-da-cua.jpg",
+  "./images/banh-hoi.jpg",
+  "./images/bun-dau-mam-tom.jpg",
+  "./images/bun-oc.jpg",
+  "./images/bun-thang.jpg",
+  "./images/banh-bot-loc.jpg",
+  "./images/banh-uot.jpg"
 ];
 
 const ALL_ASSETS = [...STATIC, ...AUDIO, ...IMAGES];
