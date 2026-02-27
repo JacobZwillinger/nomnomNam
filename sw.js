@@ -1,7 +1,7 @@
 // NomNom Nam — Service Worker
 // Caches all assets for offline use (critical for travel!)
 
-const CACHE = "nomnomnam-v8";
+const CACHE = "nomnomnam-v10";
 
 const STATIC = [
   "./index.html",
@@ -28,7 +28,11 @@ const AUDIO = [
   "./audio/banh-beo.mp3",
   "./audio/che.mp3",
   "./audio/bo-luc-lac.mp3",
-  "./audio/oc.mp3",
+  "./audio/oc-len-xao-dua.mp3",
+  "./audio/oc-huong-rang-muoi.mp3",
+  "./audio/oc-mong-tay-xao-toi.mp3",
+  "./audio/ngao-hap-sa.mp3",
+  "./audio/so-diep-nuong-mo-hanh.mp3",
   "./audio/chao-ga.mp3",
   "./audio/pho-ga.mp3",
   "./audio/bun-thit-nuong.mp3",
@@ -64,7 +68,20 @@ const AUDIO = [
   "./audio/bun-oc.mp3",
   "./audio/bun-thang.mp3",
   "./audio/banh-bot-loc.mp3",
-  "./audio/banh-uot.mp3"
+  "./audio/banh-uot.mp3",
+  "./audio/banh-can.mp3",
+  "./audio/banh-duc.mp3",
+  "./audio/goi-ca.mp3",
+  "./audio/bo-kho.mp3",
+  "./audio/thit-kho-tau.mp3",
+  "./audio/chao-long.mp3",
+  "./audio/lau.mp3",
+  "./audio/xoi-ga.mp3",
+  "./audio/com-chien.mp3",
+  "./audio/com-ga-quang-nam.mp3",
+  "./audio/sup-mang-cua.mp3",
+  "./audio/bun-ca.mp3",
+  "./audio/bun-cha-ca.mp3"
 ];
 
 // All dish images
@@ -87,7 +104,11 @@ const IMAGES = [
   "./images/banh-beo.jpg",
   "./images/che.jpg",
   "./images/bo-luc-lac.jpg",
-  "./images/oc.jpg",
+  "./images/oc-len-xao-dua.jpg",
+  "./images/oc-huong-rang-muoi.jpg",
+  "./images/oc-mong-tay-xao-toi.jpg",
+  "./images/ngao-hap-sa.jpg",
+  "./images/so-diep-nuong-mo-hanh.jpg",
   "./images/chao-ga.jpg",
   "./images/pho-ga.jpg",
   "./images/bun-thit-nuong.jpg",
@@ -123,7 +144,20 @@ const IMAGES = [
   "./images/bun-oc.jpg",
   "./images/bun-thang.jpg",
   "./images/banh-bot-loc.jpg",
-  "./images/banh-uot.jpg"
+  "./images/banh-uot.jpg",
+  "./images/banh-can.jpg",
+  "./images/banh-duc.jpg",
+  "./images/goi-ca.jpg",
+  "./images/bo-kho.jpg",
+  "./images/thit-kho-tau.jpg",
+  "./images/chao-long.jpg",
+  "./images/lau.jpg",
+  "./images/xoi-ga.jpg",
+  "./images/com-chien.jpg",
+  "./images/com-ga-quang-nam.jpg",
+  "./images/sup-mang-cua.jpg",
+  "./images/bun-ca.jpg",
+  "./images/bun-cha-ca.jpg"
 ];
 
 const ALL_ASSETS = [...STATIC, ...AUDIO, ...IMAGES];
