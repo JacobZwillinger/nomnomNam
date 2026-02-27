@@ -328,6 +328,15 @@
       padding: 16px 20px 24px;
     }
 
+    .sheet-name-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 6px;
+    }
+
+    .sheet-name-col { flex: 1; min-width: 0; }
+
     .sheet-vi-name {
       font-size: 36px;
       font-weight: 900;
@@ -416,24 +425,26 @@
 
     /* ── SPEAK BUTTON ── */
     .speak-btn {
-      width: 100%;
-      padding: 18px;
+      flex-shrink: 0;
+      width: 76px;
+      height: 76px;
+      padding: 0;
       background: var(--accent);
       color: white;
       border: none;
       border-radius: 16px;
-      font-size: 18px;
+      font-size: 28px;
       font-weight: 800;
       cursor: pointer;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 10px;
+      gap: 3px;
       transition: transform 0.15s, background 0.2s;
-      letter-spacing: -0.3px;
     }
 
-    .speak-btn:active { transform: scale(0.97); }
+    .speak-btn:active { transform: scale(0.94); }
 
     .speak-btn.playing {
       background: #c0392b;
@@ -446,11 +457,10 @@
     }
 
     .speak-btn-sub {
-      font-size: 12px;
-      font-weight: 500;
-      opacity: 0.75;
+      font-size: 11px;
+      font-weight: 600;
+      opacity: 0.85;
       display: block;
-      margin-top: 3px;
       letter-spacing: 0;
     }
 
@@ -534,7 +544,7 @@
       <h1>NomNom Nam</h1>
       <div class="subtitle">Tap any dish · Aunty will know what you want</div>
     </div>
-    <span class="dish-count" id="dishCount">39</span>
+    <span class="dish-count" id="dishCount">40</span>
   </div>
 
   <div class="filter-tabs" id="filterTabs">
@@ -549,7 +559,7 @@
 
 <!-- MAIN GRID -->
 <main>
-  <div class="results-label" id="resultsLabel">Showing all 39 dishes</div>
+  <div class="results-label" id="resultsLabel">Showing all 40 dishes</div>
   <div class="grid" id="grid"></div>
 </main>
 
@@ -571,8 +581,16 @@
   <div class="sheet-handle"></div>
   <img class="sheet-img" id="sheetImg" src="" alt="" onerror="this.style.display='none'">
   <div class="sheet-content">
-    <div class="sheet-vi-name" id="sheetViName"></div>
-    <div class="sheet-en-name" id="sheetEnName"></div>
+    <div class="sheet-name-row">
+      <div class="sheet-name-col">
+        <div class="sheet-vi-name" id="sheetViName"></div>
+        <div class="sheet-en-name" id="sheetEnName"></div>
+      </div>
+      <button class="speak-btn" id="sheetSpeakBtn" onclick="speakFromSheet()">
+        <span>🔊</span>
+        <span class="speak-btn-sub">Pronounce</span>
+      </button>
+    </div>
 
     <div class="sheet-pronunciation" id="sheetPron">
       <span class="pron-label">Say:</span>
@@ -586,14 +604,6 @@
 
     <div class="sheet-section-title">About</div>
     <p class="sheet-description" id="sheetDesc"></p>
-
-    <button class="speak-btn" id="sheetSpeakBtn" onclick="speakFromSheet()">
-      <span>🔊</span>
-      <span>
-        Tap to Pronounce
-        <span class="speak-btn-sub">Play Vietnamese name out loud</span>
-      </span>
-    </button>
   </div>
 </div>
 
@@ -1149,6 +1159,20 @@ const dishes = [
     emoji: "🍌",
     img: "images/che-chuoi.jpg",
     audio: "audio/che-chuoi.mp3"
+  },
+  {
+    id: "cuon-diep",
+    vi: "Cuốn điệp",
+    en: "Mustard Leaf Rolls",
+    pron: "koon yep",
+    region: "South",
+    cities: ["Ho Chi Minh"],
+    types: ["Spring Roll", "Noodles", "Snack"],
+    ingredients: ["mustard leaves", "rice vermicelli", "tofu", "mushrooms", "sweet peanut sauce"],
+    desc: "From Legal Nomads' Saigon city food guide: mustard leaves rolled around vermicelli, tofu, and mushrooms, served with sweet peanut sauce. A light but satisfying vegetarian street-food bite.",
+    emoji: "🥬",
+    img: "images/cuon-diep.jpg",
+    audio: "audio/cuon-diep.mp3"
   }
 ];
 
@@ -1456,15 +1480,34 @@ function openSheet(id) {
   document.getElementById("sheetOverlay").classList.add("open");
   document.getElementById("sheet").classList.add("open");
   document.body.style.overflow = "hidden";
+
+  // Push history entry so the hardware/browser back button closes the sheet
+  history.pushState({ dish: id }, "");
 }
 
 function closeSheet() {
+  const sheet = document.getElementById("sheet");
+  if (!sheet.classList.contains("open")) return;
   stopAudio();
+  sheet.classList.remove("open");
   document.getElementById("sheetOverlay").classList.remove("open");
-  document.getElementById("sheet").classList.remove("open");
   document.body.style.overflow = "";
   currentDish = null;
+  // Pop the history entry we pushed so back doesn't fire again
+  history.back();
 }
+
+// Hardware back button / browser back → close the sheet
+window.addEventListener("popstate", () => {
+  const sheet = document.getElementById("sheet");
+  if (sheet.classList.contains("open")) {
+    stopAudio();
+    sheet.classList.remove("open");
+    document.getElementById("sheetOverlay").classList.remove("open");
+    document.body.style.overflow = "";
+    currentDish = null;
+  }
+});
 
 // Close sheet on escape
 document.addEventListener("keydown", e => {
