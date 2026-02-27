@@ -290,15 +290,12 @@
 
     .sheet {
       position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
+      inset: 0;
       z-index: 201;
       background: var(--surface);
-      border-radius: 24px 24px 0 0;
+      border-radius: 0;
       transform: translateY(100%);
       transition: transform 0.38s cubic-bezier(0.34, 1.10, 0.64, 1);
-      max-height: 85dvh;
       overflow-y: auto;
       overscroll-behavior: contain;
       padding-bottom: env(safe-area-inset-bottom, 20px);
@@ -330,9 +327,9 @@
 
     .sheet-name-row {
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       gap: 14px;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }
 
     .sheet-name-col { flex: 1; min-width: 0; }
@@ -426,25 +423,21 @@
     /* ── SPEAK BUTTON ── */
     .speak-btn {
       flex-shrink: 0;
-      width: 76px;
-      height: 76px;
+      width: 72px;
+      height: 72px;
       padding: 0;
       background: var(--accent);
       color: white;
       border: none;
-      border-radius: 16px;
-      font-size: 28px;
-      font-weight: 800;
+      border-radius: 18px;
       cursor: pointer;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 3px;
       transition: transform 0.15s, background 0.2s;
     }
 
-    .speak-btn:active { transform: scale(0.94); }
+    .speak-btn:active { transform: scale(0.97); }
 
     .speak-btn.playing {
       background: #c0392b;
@@ -453,15 +446,7 @@
 
     @keyframes speakPulse {
       0%, 100% { box-shadow: 0 0 0 0 rgba(232,93,63,0.5); }
-      50% { box-shadow: 0 0 0 14px rgba(232,93,63,0); }
-    }
-
-    .speak-btn-sub {
-      font-size: 11px;
-      font-weight: 600;
-      opacity: 0.85;
-      display: block;
-      letter-spacing: 0;
+      50% { box-shadow: 0 0 0 16px rgba(232,93,63,0); }
     }
 
     /* ── EMPTY STATE ── */
@@ -544,7 +529,7 @@
       <h1>NomNom Nam</h1>
       <div class="subtitle">Tap any dish · Aunty will know what you want</div>
     </div>
-    <span class="dish-count" id="dishCount">40</span>
+    <span class="dish-count" id="dishCount">48</span>
   </div>
 
   <div class="filter-tabs" id="filterTabs">
@@ -559,7 +544,7 @@
 
 <!-- MAIN GRID -->
 <main>
-  <div class="results-label" id="resultsLabel">Showing all 40 dishes</div>
+  <div class="results-label" id="resultsLabel">Showing all 48 dishes</div>
   <div class="grid" id="grid"></div>
 </main>
 
@@ -587,8 +572,11 @@
         <div class="sheet-en-name" id="sheetEnName"></div>
       </div>
       <button class="speak-btn" id="sheetSpeakBtn" onclick="speakFromSheet()">
-        <span>🔊</span>
-        <span class="speak-btn-sub">Pronounce</span>
+        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="white"/>
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
       </button>
     </div>
 
@@ -1173,6 +1161,118 @@ const dishes = [
     emoji: "🥬",
     img: "images/cuon-diep.jpg",
     audio: "audio/cuon-diep.mp3"
+  },
+  {
+    id: "banh-canh",
+    vi: "Bánh canh",
+    en: "Thick Tapioca Noodle Soup",
+    pron: "bahn kahn",
+    region: "South",
+    cities: ["Ho Chi Minh", "Hue"],
+    types: ["Noodle Soup", "Noodles", "Pork"],
+    ingredients: ["thick tapioca noodles", "pork or seafood broth", "fish cake", "scallions", "fried shallots"],
+    desc: "Mentioned in Legal Nomads' Vietnam city food pages. Thick, chewy noodles in a savory broth; versions vary by city and protein.",
+    emoji: "🍜",
+    img: "images/banh-canh.jpg",
+    audio: "audio/banh-canh.mp3"
+  },
+  {
+    id: "canh-cua",
+    vi: "Canh cua",
+    en: "Crab Soup",
+    pron: "kahn koo-ah",
+    region: "North",
+    cities: ["Hanoi"],
+    types: ["Soup", "Crab", "Seafood"],
+    ingredients: ["fresh crab paste", "leafy greens", "taro stems", "broth", "seasonings"],
+    desc: "Referenced in Legal Nomads' Vietnam gluten-free guide. A light Vietnamese crab soup often served with greens and rice.",
+    emoji: "🦀",
+    img: "images/canh-cua.jpg",
+    audio: "audio/canh-cua.mp3"
+  },
+  {
+    id: "nem-ran",
+    vi: "Nem rán",
+    en: "Northern Fried Spring Rolls",
+    pron: "nem rahn",
+    region: "North",
+    cities: ["Hanoi"],
+    types: ["Spring Roll", "Fried", "Pork"],
+    ingredients: ["rice paper", "pork", "mushrooms", "glass noodles", "carrot", "fish sauce"],
+    desc: "Called out in Legal Nomads' Vietnam food coverage. The northern style of fried spring rolls, close cousin to southern chả giò.",
+    emoji: "🥟",
+    img: "images/nem-ran.jpg",
+    audio: "audio/nem-ran.mp3"
+  },
+  {
+    id: "banh-trang-cuon",
+    vi: "Bánh tráng cuốn",
+    en: "Rice Paper Rolls",
+    pron: "bahn trang koon",
+    region: "South",
+    cities: ["Ho Chi Minh"],
+    types: ["Street Food", "Snack", "Spring Roll"],
+    ingredients: ["rice paper", "herbs", "pickled vegetables", "protein filling", "dipping sauce"],
+    desc: "Featured in Legal Nomads' Saigon writing. Soft rice paper rolled with fresh fillings and eaten as a quick street snack.",
+    emoji: "🌯",
+    img: "images/banh-trang-cuon.jpg",
+    audio: "audio/banh-trang-cuon.mp3"
+  },
+  {
+    id: "banh-chung",
+    vi: "Bánh chưng",
+    en: "Square Sticky Rice Cake",
+    pron: "bahn choong",
+    region: "North",
+    cities: ["Hanoi"],
+    types: ["Rice", "Pork", "Snack"],
+    ingredients: ["glutinous rice", "mung beans", "pork", "dong leaves", "black pepper"],
+    desc: "Mentioned in Legal Nomads' Saigon/Vietnam posts. A traditional Tet rice cake, square-shaped and wrapped in green leaves.",
+    emoji: "🟩",
+    img: "images/banh-chung.jpg",
+    audio: "audio/banh-chung.mp3"
+  },
+  {
+    id: "banh-gio",
+    vi: "Bánh giò",
+    en: "Steamed Pyramid Rice Dumpling",
+    pron: "bahn yaw",
+    region: "North",
+    cities: ["Hanoi"],
+    types: ["Steamed", "Snack", "Pork"],
+    ingredients: ["rice flour dough", "minced pork", "wood ear mushroom", "banana leaf"],
+    desc: "Called out in Legal Nomads' Vietnam content. A soft, savory steamed dumpling wrapped in banana leaf and eaten warm.",
+    emoji: "🫔",
+    img: "images/banh-gio.jpg",
+    audio: "audio/banh-gio.mp3"
+  },
+  {
+    id: "hu-tieu-nam-vang",
+    vi: "Hủ tiếu Nam Vang",
+    en: "Phnom Penh-Style Hu Tieu",
+    pron: "hoo tee-ow nahm vahng",
+    region: "South",
+    cities: ["Ho Chi Minh"],
+    types: ["Noodle Soup", "Noodles", "Pork"],
+    ingredients: ["rice noodles", "pork broth", "shrimp", "minced pork", "quail eggs", "garlic chives"],
+    desc: "Explicitly listed on Legal Nomads' Saigon guide. The Phnom Penh-influenced hủ tiếu style, served dry or with broth.",
+    emoji: "🍲",
+    img: "images/hu-tieu-nam-vang.jpg",
+    audio: "audio/hu-tieu-nam-vang.mp3"
+  },
+  {
+    id: "hu-tieu-my-tho",
+    vi: "Hủ tiếu Mỹ Tho",
+    en: "My Tho Hu Tieu",
+    pron: "hoo tee-ow mee taw",
+    region: "South",
+    cities: ["My Tho", "Ho Chi Minh"],
+    types: ["Noodle Soup", "Noodles", "Pork"],
+    ingredients: ["rice noodles", "clear broth", "pork", "seafood", "chives", "fried shallots"],
+    desc: "Also listed in Legal Nomads' Saigon guide. A southern Mekong-style hủ tiếu known for springy noodles and light broth.",
+    emoji: "🍜",
+    img: "images/hu-tieu-my-tho.jpg",
+    audio: "audio/hu-tieu-my-tho.mp3"
   }
 ];
 
@@ -1194,7 +1294,8 @@ const filterGroups = {
     { key: "Da Nang",       label: "🌊 Da Nang",       icon: "🌊" },
     { key: "Vung Tau",      label: "⛱ Vung Tau",      icon: "⛱" },
     { key: "Can Tho",       label: "🚤 Can Tho",       icon: "🚤" },
-    { key: "Da Lat",        label: "🌿 Da Lat",        icon: "🌿" }
+    { key: "Da Lat",        label: "🌿 Da Lat",        icon: "🌿" },
+    { key: "My Tho",        label: "🛶 My Tho",        icon: "🛶" }
   ],
   type: [
     { key: "Noodle Soup", label: "🍜 Noodle Soup", icon: "🍜" },
@@ -1341,8 +1442,8 @@ function setSheetPlaying(playing) {
   if (!btn) return;
   btn.classList.toggle("playing", playing);
   btn.innerHTML = playing
-    ? `<span>⏹</span><span>Playing...<span class="speak-btn-sub">Tap to stop</span></span>`
-    : `<span>🔊</span><span>Tap to Pronounce<span class="speak-btn-sub">Play Vietnamese name out loud</span></span>`;
+    ? `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="white"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>`
+    : `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="white"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 }
 
 function speakFromSheet() {
@@ -1427,13 +1528,13 @@ function renderGrid() {
   label.textContent = `Showing ${filterLabel}`;
 
   grid.innerHTML = filtered.map(d => `
-    <div class="card" data-id="${d.id}" onclick="openSheet('${d.id}'); playDish(dishes.find(x=>x.id==='${d.id}'))">
+    <div class="card" data-id="${d.id}" onclick="openSheet('${d.id}')">
       <div class="card-img-wrap">
         <div class="img-placeholder">${d.emoji}</div>
         <img class="loading" src="${d.img}" alt="${d.en}"
           onload="this.classList.remove('loading');this.classList.add('loaded')"
           onerror="this.style.display='none'">
-        <div class="play-badge">🔊</div>
+        <div class="play-badge" onclick="event.stopPropagation(); playDish(dishes.find(x=>x.id==='${d.id}'))">🔊</div>
       </div>
       <div class="card-body">
         <div class="card-vi">${d.vi}</div>

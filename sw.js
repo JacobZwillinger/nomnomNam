@@ -1,7 +1,7 @@
 // NomNom Nam — Service Worker
 // Caches all assets for offline use (critical for travel!)
 
-const CACHE = "nomnomnam-v2";
+const CACHE = "nomnomnam-v6";
 
 const STATIC = [
   "./index.html",
@@ -41,7 +41,23 @@ const AUDIO = [
   "./audio/bun-hen.mp3",
   "./audio/nem-lui.mp3",
   "./audio/banh-trang-nuong.mp3",
-  "./audio/banh-ep.mp3"
+  "./audio/banh-ep.mp3",
+  "./audio/banh-khoai.mp3",
+  "./audio/banh-trang-trung.mp3",
+  "./audio/banh-da-xuc-hen.mp3",
+  "./audio/banh-tam-bi.mp3",
+  "./audio/com-suon.mp3",
+  "./audio/canh-kho-qua-nhoi-thit.mp3",
+  "./audio/che-chuoi.mp3",
+  "./audio/cuon-diep.mp3",
+  "./audio/banh-canh.mp3",
+  "./audio/canh-cua.mp3",
+  "./audio/nem-ran.mp3",
+  "./audio/banh-trang-cuon.mp3",
+  "./audio/banh-chung.mp3",
+  "./audio/banh-gio.mp3",
+  "./audio/hu-tieu-nam-vang.mp3",
+  "./audio/hu-tieu-my-tho.mp3"
 ];
 
 // All dish images
@@ -77,7 +93,23 @@ const IMAGES = [
   "./images/bun-hen.jpg",
   "./images/nem-lui.jpg",
   "./images/banh-trang-nuong.jpg",
-  "./images/banh-ep.jpg"
+  "./images/banh-ep.jpg",
+  "./images/banh-khoai.jpg",
+  "./images/banh-trang-trung.jpg",
+  "./images/banh-da-xuc-hen.jpg",
+  "./images/banh-tam-bi.jpg",
+  "./images/com-suon.jpg",
+  "./images/canh-kho-qua-nhoi-thit.jpg",
+  "./images/che-chuoi.jpg",
+  "./images/cuon-diep.jpg",
+  "./images/banh-canh.jpg",
+  "./images/canh-cua.jpg",
+  "./images/nem-ran.jpg",
+  "./images/banh-trang-cuon.jpg",
+  "./images/banh-chung.jpg",
+  "./images/banh-gio.jpg",
+  "./images/hu-tieu-nam-vang.jpg",
+  "./images/hu-tieu-my-tho.jpg"
 ];
 
 const ALL_ASSETS = [...STATIC, ...AUDIO, ...IMAGES];
