@@ -1,7 +1,7 @@
 {
   "name": "NomNom Nam",
   "short_name": "NomNom Nam",
-  "description": "Tap any Vietnamese dish to hear it pronounced — so the aunty knows what you want",
+  "description": "Tap any dish to hear it pronounced — Vietnamese, Mandarin & Cantonese street food",
   "start_url": "./index.html",
   "display": "standalone",
   "orientation": "portrait",

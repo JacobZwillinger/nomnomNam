@@ -9,6 +9,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   <title>🍜 NomNom Nam</title>
+  <meta name="description" content="Tap any dish to hear it pronounced — Vietnamese, Mandarin and Cantonese street food">
   <style>
     :root {
       --bg: #0f0f0f;
@@ -657,6 +658,81 @@
     }
 
     .phrase-card.playing .phrase-play { background: #c0392b; }
+
+    /* ── COUNTRY SWITCHER ── */
+    .country-btn {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--surface2); border: 1.5px solid var(--border);
+      color: var(--text); border-radius: 20px; padding: 5px 10px 5px 8px;
+      font-size: 13px; font-weight: 700; cursor: pointer; flex-shrink: 0;
+    }
+    .country-btn:active { transform: scale(0.96); }
+    .country-flag { font-size: 18px; line-height: 1; }
+    .country-caret { color: var(--text-muted); font-size: 10px; }
+    @media (max-width: 380px) { .country-name { display: none; } .subtitle { display: none; } }
+
+    .offline-status {
+      font-size: 11px; color: var(--accent2); margin: -6px 0 8px; display: none;
+    }
+    .offline-status.visible { display: block; }
+
+    .country-overlay { z-index: 300; }
+    .country-sheet {
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 301;
+      background: var(--surface); border-radius: 22px 22px 0 0;
+      max-width: 560px; margin: 0 auto;
+      padding: 0 16px calc(20px + env(safe-area-inset-bottom, 0px));
+      transform: translateY(105%); transition: transform 0.32s cubic-bezier(0.34, 1.10, 0.64, 1);
+      max-height: 85dvh; overflow-y: auto; border: 1px solid var(--border); border-bottom: none;
+    }
+    .country-sheet.open { transform: translateY(0); }
+    .country-sheet-title { font-size: 20px; font-weight: 800; letter-spacing: -0.4px; margin: 14px 4px 12px; }
+    .country-sheet-note { font-size: 12px; color: var(--text-muted); margin: 10px 4px 0; line-height: 1.5; }
+    .country-row {
+      display: flex; align-items: center; gap: 12px; padding: 12px 14px; margin-bottom: 8px;
+      border-radius: var(--radius); border: 1.5px solid var(--border); background: var(--surface2); cursor: pointer;
+    }
+    .country-row.active { border-color: var(--accent); background: rgba(232,93,63,0.08); }
+    .country-row:active { transform: scale(0.98); }
+    .country-row-flag { font-size: 34px; line-height: 1; }
+    .country-row-text { flex: 1; min-width: 0; }
+    .country-row-name { font-size: 17px; font-weight: 800; }
+    .country-row-native { font-weight: 600; color: var(--text-muted); font-size: 14px; margin-left: 4px; }
+    .country-row-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    .country-row-status { font-size: 11px; color: var(--accent2); margin-top: 3px; font-weight: 600; }
+    .country-row-status.ok { color: var(--green); }
+    .country-row-check { color: var(--accent); font-weight: 900; font-size: 18px; }
+    .offline-btn {
+      background: transparent; color: var(--text); border: 1.5px solid var(--border);
+      border-radius: 14px; padding: 6px 10px; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap;
+    }
+
+    /* ── FILTER EXTRAS ── */
+    .filter-tab.has-value { color: var(--accent2); }
+    .filter-tabs { overflow-x: auto; scrollbar-width: none; }
+    .filter-tabs::-webkit-scrollbar { display: none; }
+    .pill-count { font-size: 11px; opacity: 0.6; font-weight: 700; }
+    .pill.scope { border-style: dashed; color: var(--accent2); border-color: rgba(244,164,53,0.5); }
+    .pill-x { font-size: 11px; opacity: 0.8; }
+
+    /* ── CJK NAMES ── */
+    .cjk { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "PingFang HK", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", "Noto Sans SC", sans-serif; letter-spacing: 0.5px; }
+    .card-vi.cjk { font-size: 20px; }
+    .card-roman { font-size: 12px; color: var(--accent2); font-weight: 600; margin-bottom: 2px; }
+    .sheet-roman { font-size: 18px; color: var(--accent2); font-weight: 700; margin-bottom: 4px; }
+    .sheet-vi-name.cjk { font-size: 44px; letter-spacing: 1px; }
+    .lang-flag {
+      position: absolute; top: 8px; left: 8px; z-index: 2;
+      background: rgba(0,0,0,0.65); backdrop-filter: blur(6px); color: white;
+      font-size: 10px; font-weight: 700; padding: 3px 7px; border-radius: 10px;
+    }
+    .meta-chip.country { border-color: rgba(240,237,232,0.25); color: var(--text); }
+
+    /* ── PHRASE LANGUAGE TABS ── */
+    .phrase-lang-tabs { display: flex; gap: 7px; padding: 4px 0 2px; }
+    .phrase-lang-note { font-size: 12px; color: var(--text-muted); padding: 6px 2px 0; }
+    .lang-badge { font-size: 13px; font-weight: 800; }
+    .phrase-roman { font-size: 13px; color: var(--accent2); font-weight: 600; margin-bottom: 2px; }
   </style>
 </head>
 <body>
@@ -667,10 +743,16 @@
     <span class="logo">🍜</span>
     <div class="header-titles">
       <h1>NomNom Nam</h1>
-      <div class="subtitle">Tap any dish · Aunty will know what you want</div>
+      <div class="subtitle" id="subtitle">Tap any dish · Aunty will know what you want</div>
     </div>
+    <button class="country-btn" id="countryBtn" onclick="openCountryPicker()" aria-label="Change country">
+      <span class="country-flag" id="countryFlag">🇻🇳</span>
+      <span class="country-name" id="countryName">Vietnam</span>
+      <span class="country-caret">▾</span>
+    </button>
     <span class="dish-count" id="dishCount">72</span>
   </div>
+  <div class="offline-status" id="offlineStatus"></div>
 
   <div class="mode-tabs">
     <button class="mode-tab active" data-mode="dishes" onclick="setMode('dishes')">🍜 Dishes</button>
@@ -688,7 +770,7 @@
     <div class="search-wrap" id="searchWrap">
       <span class="search-icon">⌕</span>
       <input class="search-input" id="searchInput" type="search"
-        placeholder="Search dishes…"
+        placeholder="Search name, characters, pinyin, ingredient…"
         oninput="onSearch(event)"
         autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
       <button class="search-clear" id="searchClear" onclick="clearSearch()" aria-label="Clear">✕</button>
@@ -715,6 +797,15 @@
   <span id="nowPlayingText"></span>
 </div>
 
+<!-- COUNTRY PICKER -->
+<div class="sheet-overlay country-overlay" id="countryOverlay" onclick="closeCountryPicker()"></div>
+<div class="country-sheet" id="countrySheet" role="dialog" aria-label="Choose a country">
+  <div class="sheet-handle"></div>
+  <div class="country-sheet-title">Where are you eating?</div>
+  <div id="countryList"></div>
+  <div class="country-sheet-note">The country you pick is saved for offline use automatically. More countries coming.</div>
+</div>
+
 <!-- DETAIL SHEET -->
 <div class="sheet-overlay" id="sheetOverlay" onclick="closeSheet()"></div>
 <div class="sheet" id="sheet">
@@ -724,6 +815,7 @@
     <div class="sheet-name-row">
       <div class="sheet-name-col">
         <div class="sheet-vi-name" id="sheetViName"></div>
+        <div class="sheet-roman" id="sheetRoman"></div>
         <div class="sheet-en-name" id="sheetEnName"></div>
       </div>
       <button class="speak-btn" id="sheetSpeakBtn" onclick="speakFromSheet()">
@@ -736,7 +828,7 @@
     </div>
 
     <div class="sheet-pronunciation" id="sheetPron">
-      <span class="pron-label">Say:</span>
+      <span class="pron-label" id="sheetPronLabel">Say:</span>
       <span class="pron-text" id="sheetPronText"></span>
     </div>
 
@@ -752,1234 +844,312 @@
 
 <script>
 // ═══════════════════════════════════════════════
-// DISH DATA
+// COUNTRIES
+// Each country's dishes, phrases, regions, cities and types live in
+// data/<id>.json. Hierarchy: Country → Region → City → Dish.
 // ═══════════════════════════════════════════════
-const dishes = [
-  {
-    id: "pho-bo",
-    vi: "Phở bò",
-    en: "Beef Noodle Soup",
-    pron: "fuh baw",
-    region: "North",
-    cities: ["Hanoi"],
-    types: ["Noodle Soup", "Beef"],
-    ingredients: ["rice noodles", "beef broth", "star anise", "cinnamon", "beef slices", "green onions", "basil", "lime", "bean sprouts", "hoisin sauce"],
-    desc: "Vietnam's most iconic dish. A fragrant broth simmered for hours with spices, served with silky rice noodles and thinly sliced beef. Order 'Phở tái' for rare beef, 'Phở chín' for well-done.",
-    emoji: "🍜",
-    img: "images/pho-bo.jpg",
-    audio: "audio/pho-bo.mp3"
-  },
-  {
-    id: "banh-mi",
-    vi: "Bánh mì",
-    en: "Vietnamese Sandwich",
-    pron: "bahn mee",
-    region: "South",
-    cities: ["Ho Chi Minh"],
-    types: ["Sandwich", "Pork", "Chicken"],
-    ingredients: ["baguette", "pâté", "pork", "pickled daikon", "pickled carrot", "cucumber", "cilantro", "chili", "mayonnaise"],
-    desc: "A crispy French-Vietnamese baguette stuffed with meats, pickled vegetables and fresh herbs. One of the world's greatest street food sandwiches. Costs about 20,000–40,000 VND.",
-    emoji: "🥖",
-    img: "images/banh-mi.jpg",
-    audio: "audio/banh-mi.mp3"
-  },
-  {
-    id: "bun-bo-hue",
-    vi: "Bún bò Huế",
-    en: "Spicy Beef Noodle Soup",
-    pron: "boon baw hway",
-    region: "Central",
-    cities: ["Hue"],
-    types: ["Noodle Soup", "Beef", "Spicy"],
-    ingredients: ["thick round noodles", "lemongrass broth", "beef shank", "pork knuckle", "shrimp paste", "chili oil", "banana blossom", "mint", "lime"],
-    desc: "Considered by many to be superior even to Phở. A fiery, lemongrass-scented broth with thick round noodles and tender beef. The shrimp paste gives it a unique depth. Not for the spice-averse.",
-    emoji: "🌶️",
-    img: "images/bun-bo-hue.jpg",
-    audio: "audio/bun-bo-hue.mp3"
-  },
-  {
-    id: "cao-lau",
-    vi: "Cao lầu",
-    en: "Hoi An Noodles",
-    pron: "cow loh",
-    region: "Central",
-    cities: ["Hoi An"],
-    types: ["Noodles", "Pork"],
-    ingredients: ["thick chewy noodles", "char siu pork", "pork crackling", "bean sprouts", "herbs", "star anise broth"],
-    desc: "Unique to Hoi An — supposedly only made correctly with water from the town's ancient wells. Thick, chewy noodles with BBQ pork and crunchy crackling in a small amount of broth.",
-    emoji: "🍝",
-    img: "images/cao-lau.jpg",
-    audio: "audio/cao-lau.mp3"
-  },
-  {
-    id: "mi-quang",
-    vi: "Mì Quảng",
-    en: "Quang Noodles",
-    pron: "mee kwang",
-    region: "Central",
-    cities: ["Da Nang"],
-    types: ["Noodles", "Shrimp", "Pork"],
-    ingredients: ["turmeric noodles", "shrimp", "pork", "quail eggs", "peanuts", "sesame crackers", "banana flower", "herbs", "minimal broth"],
-    desc: "Da Nang's signature dish — wide turmeric-yellow noodles with shrimp, pork, and a small splash of rich broth. Served with peanuts, crispy rice crackers, and a pile of fresh herbs.",
-    emoji: "🟡",
-    img: "images/mi-quang.jpg",
-    audio: "audio/mi-quang.mp3"
-  },
-  {
-    id: "banh-xeo",
-    vi: "Bánh xèo",
-    en: "Sizzling Crepe",
-    pron: "bahn say-oh",
-    region: "South",
-    cities: ["Ho Chi Minh", "Da Nang"],
-    types: ["Crepe", "Shrimp", "Pork"],
-    ingredients: ["rice flour batter", "turmeric", "coconut milk", "shrimp", "pork belly", "bean sprouts", "spring onion", "lettuce", "herbs", "dipping sauce"],
-    desc: "Named after the loud sizzle it makes when batter hits the pan. A crispy golden crepe stuffed with shrimp, pork and bean sprouts, wrapped in lettuce with fresh herbs and dipped in nước chấm.",
-    emoji: "🥞",
-    img: "images/banh-xeo.jpg",
-    audio: "audio/banh-xeo.mp3"
-  },
-  {
-    id: "goi-cuon",
-    vi: "Gỏi cuốn",
-    en: "Fresh Spring Rolls",
-    pron: "goy koo-un",
-    region: "South",
-    cities: ["Ho Chi Minh"],
-    types: ["Spring Roll", "Shrimp", "Pork"],
-    ingredients: ["rice paper", "cooked shrimp", "pork slices", "rice vermicelli", "lettuce", "mint", "coriander", "hoisin peanut dipping sauce"],
-    desc: "Light, fresh and healthy. Translucent rice paper rolls filled with shrimp, pork, herbs, and vermicelli. Perfect as a starter. Always served with a peanut-hoisin dipping sauce.",
-    emoji: "🌯",
-    img: "images/goi-cuon.jpg",
-    audio: "audio/goi-cuon.mp3"
-  },
-  {
-    id: "cha-gio",
-    vi: "Chả giò",
-    en: "Fried Spring Rolls",
-    pron: "cha yaw",
-    region: "South",
-    cities: ["Ho Chi Minh"],
-    types: ["Spring Roll", "Fried", "Pork"],
-    ingredients: ["rice paper", "minced pork", "crab meat", "glass noodles", "wood ear mushroom", "taro", "carrot", "nước chấm"],
-    desc: "Crispy fried spring rolls packed with a savory pork and vegetable filling. The southern Vietnamese version uses rice paper wrappers that shatter when you bite them. Always eaten with nước chấm.",
-    emoji: "🥟",
-    img: "images/cha-gio.jpg",
-    audio: "audio/cha-gio.mp3"
-  },
-  {
-    id: "bun-cha",
-    vi: "Bún chả",
-    en: "Grilled Pork & Noodles",
-    pron: "boon chah",
-    region: "North",
-    cities: ["Hanoi"],
-    types: ["Grilled", "Pork", "Noodles"],
-    ingredients: ["rice vermicelli", "charcoal-grilled pork patties", "pork belly", "fish sauce broth", "papaya", "carrot", "herbs", "garlic", "chili"],
-    desc: "Hanoi's beloved lunch dish, made famous when Obama ate it with Anthony Bourdain. Grilled smoky pork patties and belly in a sweet vinegary fish sauce broth, served with cool vermicelli noodles.",
-    emoji: "🥩",
-    img: "images/bun-cha.jpg",
-    audio: "audio/bun-cha.mp3"
-  },
-  {
-    id: "com-tam",
-    vi: "Cơm tấm",
-    en: "Broken Rice",
-    pron: "kum tum",
-    region: "South",
-    cities: ["Ho Chi Minh"],
-    types: ["Rice", "Pork", "Grilled"],
-    ingredients: ["broken rice", "grilled pork chop", "shredded pork skin", "steamed egg cake", "fish sauce", "pickled vegetables", "scallion oil"],
-    desc: "Saigon's breakfast of champions. Fragrant broken rice (smaller grains = better texture) topped with grilled pork chop, shredded pork skin, and a steamed egg cake. A perfect plate for about 30,000 VND.",
-    emoji: "🍚",
-    img: "images/com-tam.jpg",
-    audio: "audio/com-tam.mp3"
-  },
-  {
-    id: "banh-cuon",
-    vi: "Bánh cuốn",
-    en: "Steamed Rice Rolls",
-    pron: "bahn koo-un",
-    region: "North",
-    cities: ["Hanoi"],
-    types: ["Rice Roll", "Pork", "Steamed"],
-    ingredients: ["rice flour sheets", "minced pork", "wood ear mushroom", "fried shallots", "bean sprouts", "cucumber", "herbs", "fish sauce"],
-    desc: "Silky thin rice flour sheets, freshly steamed and filled with seasoned minced pork and mushrooms, topped with crispy fried shallots. Best eaten for breakfast in Hanoi.",
-    emoji: "🫔",
-    img: "images/banh-cuon.jpg",
-    audio: "audio/banh-cuon.mp3"
-  },
-  {
-    id: "hu-tieu",
-    vi: "Hủ tiếu",
-    en: "Southern Noodle Soup",
-    pron: "hoo tee-ow",
-    region: "South",
-    cities: ["Ho Chi Minh", "Can Tho"],
-    types: ["Noodle Soup", "Pork", "Shrimp"],
-    ingredients: ["thin rice noodles", "clear pork broth", "shrimp", "pork slices", "quail eggs", "fried garlic", "bean sprouts", "chili", "lime"],
-    desc: "The south's answer to Phở — a clear, delicate pork and seafood broth with thin rice noodles. Can be ordered 'khô' (dry, like a salad) or 'nước' (with soup). Often eaten for breakfast.",
-    emoji: "🦐",
-    img: "images/hu-tieu.jpg",
-    audio: "audio/hu-tieu.mp3"
-  },
-  {
-    id: "bun-rieu",
-    vi: "Bún riêu",
-    en: "Crab Noodle Soup",
-    pron: "boon ree-ow",
-    region: "North",
-    cities: ["Hanoi"],
-    types: ["Noodle Soup", "Crab", "Tomato"],
-    ingredients: ["rice vermicelli", "crab meat", "crab paste", "tomatoes", "tofu", "pork", "shrimp paste", "fried shallots", "herbs", "lime"],
-    desc: "A tomato-red, tangy broth with fluffy crab meat balls, tofu, and pork. The sour notes come from tamarind or tomatoes. A refreshing change from heavier broth-based soups.",
-    emoji: "🦀",
-    img: "images/bun-rieu.jpg",
-    audio: "audio/bun-rieu.mp3"
-  },
-  {
-    id: "canh-chua",
-    vi: "Canh chua",
-    en: "Sour Fish Soup",
-    pron: "kahn choo-ah",
-    region: "South",
-    cities: ["Ho Chi Minh", "Can Tho"],
-    types: ["Soup", "Fish", "Sour"],
-    ingredients: ["fish (catfish or snakehead)", "tamarind", "tomatoes", "pineapple", "bean sprouts", "taro stem", "okra", "dill", "elephant ear taro"],
-    desc: "The heart of a Vietnamese family meal. A bright, tangy tamarind-based soup with fresh fish, pineapple, tomatoes, and vegetables. Sour, sweet, and savory all at once. Serve with steamed rice.",
-    emoji: "🐟",
-    img: "images/canh-chua.jpg",
-    audio: "audio/canh-chua.mp3"
-  },
-  {
-    id: "banh-khot",
-    vi: "Bánh khọt",
-    en: "Mini Savory Pancakes",
-    pron: "bahn khote",
-    region: "South",
-    cities: ["Vung Tau"],
-    types: ["Pancake", "Shrimp", "Coconut"],
-    ingredients: ["rice flour", "coconut milk", "turmeric", "shrimp", "mung beans", "fried shallots", "lettuce", "herbs", "dipping sauce"],
-    desc: "Tiny, crispy-edged coconut rice pancakes topped with a whole shrimp, made in special cast iron pans. A specialty of Vung Tau. Wrap each one in lettuce with fresh herbs.",
-    emoji: "🥞",
-    img: "images/banh-khot.jpg",
-    audio: "audio/banh-khot.mp3"
-  },
-  {
-    id: "banh-beo",
-    vi: "Bánh bèo",
-    en: "Steamed Water Fern Cakes",
-    pron: "bahn bay-oh",
-    region: "Central",
-    cities: ["Hue"],
-    types: ["Steamed Cake", "Shrimp"],
-    ingredients: ["rice flour", "tapioca starch", "dried shrimp floss", "fried shallots", "pork rinds", "scallion oil", "fish sauce"],
-    desc: "Hue's beloved snack — small steamed rice cakes served in their little ceramic dishes, topped with dried shrimp floss, pork rinds, and scallion oil. Eaten by spooning from the dish.",
-    emoji: "🫙",
-    img: "images/banh-beo.jpg",
-    audio: "audio/banh-beo.mp3"
-  },
-  {
-    id: "che",
-    vi: "Chè",
-    en: "Sweet Dessert Soup",
-    pron: "chay",
-    region: "South",
-    cities: ["Ho Chi Minh", "Hue"],
-    types: ["Dessert", "Sweet", "Coconut"],
-    ingredients: ["mung beans", "black-eyed peas", "taro", "coconut milk", "tapioca pearls", "pandan jelly", "crushed ice", "palm sugar"],
-    desc: "Vietnamese sweet soups and puddings — served hot or cold, with hundreds of varieties. 'Chè ba màu' (three-color dessert) is the most famous: layers of mung bean, jelly, and coconut milk over ice.",
-    emoji: "🍮",
-    img: "images/che.jpg",
-    audio: "audio/che.mp3"
-  },
-  {
-    id: "bo-luc-lac",
-    vi: "Bò lúc lắc",
-    en: "Shaking Beef",
-    pron: "baw look luck",
-    region: "South",
-    cities: ["Ho Chi Minh"],
-    types: ["Beef", "Stir-fry", "Grilled"],
-    ingredients: ["beef tenderloin", "garlic", "soy sauce", "oyster sauce", "black pepper", "butter", "watercress", "lime-pepper dipping salt", "pickled onion"],
-    desc: "Tender cubes of beef wok-tossed (shaken) with garlic and butter in a scorching hot wok, served on a bed of watercress. Dip each cube in lime juice with black salt and pepper. A showstopper.",
-    emoji: "🥩",
-    img: "images/bo-luc-lac.jpg",
-    audio: "audio/bo-luc-lac.mp3"
-  },
-  {
-    id: "oc-len-xao-dua",
-    vi: "Ốc len xào dừa",
-    en: "Coconut Milk Mud Snails",
-    pron: "oke len sao doo-ah",
-    region: "South",
-    cities: ["Ho Chi Minh"],
-    types: ["Seafood", "Shellfish", "Spicy"],
-    ingredients: ["mud snails", "coconut milk", "lemongrass", "chili", "fish sauce", "sugar"],
-    desc: "Saigon shellfish classic: snails stir-cooked in rich coconut milk with lemongrass and chili. You sip out the meat and sauce.",
-    emoji: "🐌",
-    img: "images/oc-len-xao-dua.jpg",
-    audio: "audio/oc-len-xao-dua.mp3"
-  },
-  {
-    id: "oc-huong-rang-muoi",
-    vi: "Ốc hương rang muối",
-    en: "Babylon Snails with Salt",
-    pron: "oke huong rang muoy",
-    region: "South",
-    cities: ["Ho Chi Minh"],
-    types: ["Seafood", "Shellfish", "Snack"],
-    ingredients: ["babylon snails", "salt", "garlic", "chili", "butter", "lime leaves"],
-    desc: "Fragrant sea snails tossed in seasoned salt, garlic, and chili. One of the most ordered ốc-diner plates.",
-    emoji: "🐚",
-    img: "images/oc-huong-rang-muoi.jpg",
-    audio: "audio/oc-huong-rang-muoi.mp3"
-  },
-  {
-    id: "oc-mong-tay-xao-toi",
-    vi: "Ốc móng tay xào tỏi",
-    en: "Razor Clams Stir-Fried with Garlic",
-    pron: "oke mong tay sao toy",
-    region: "South",
-    cities: ["Ho Chi Minh"],
-    types: ["Seafood", "Shellfish", "Grilled"],
-    ingredients: ["razor clams", "garlic", "butter", "scallions", "chili", "fish sauce"],
-    desc: "Razor clams quickly stir-fried with lots of garlic and butter; salty, aromatic, and perfect with beer.",
-    emoji: "🦪",
-    img: "images/oc-mong-tay-xao-toi.jpg",
-    audio: "audio/oc-mong-tay-xao-toi.mp3"
-  },
-  {
-    id: "ngao-hap-sa",
-    vi: "Ngao hấp sả",
-    en: "Steamed Clams with Lemongrass",
-    pron: "ngow hup sa",
-    region: "South",
-    cities: ["Ho Chi Minh"],
-    types: ["Seafood", "Clam", "Soup"],
-    ingredients: ["clams", "lemongrass", "ginger", "chili", "fish sauce", "herbs"],
-    desc: "Simple steamed clams perfumed with lemongrass. Brothy, fresh, and common at seafood restaurants.",
-    emoji: "🦪",
-    img: "images/ngao-hap-sa.jpg",
-    audio: "audio/ngao-hap-sa.mp3"
-  },
-  {
-    id: "so-diep-nuong-mo-hanh",
-    vi: "Sò điệp nướng mỡ hành",
-    en: "Grilled Scallops with Scallion Oil",
-    pron: "saw diep noong murr hanh",
-    region: "South",
-    cities: ["Ho Chi Minh", "Vung Tau"],
-    types: ["Seafood", "Grilled", "Snack"],
-    ingredients: ["scallops", "scallion oil", "roasted peanuts", "fish sauce", "chili"],
-    desc: "Scallops grilled in-shell and topped with scallion oil and peanuts. A signature Vietnamese seafood appetizer.",
-    emoji: "🐚",
-    img: "images/so-diep-nuong-mo-hanh.jpg",
-    audio: "audio/so-diep-nuong-mo-hanh.mp3"
-  },
-  {
-    id: "chao-ga",
-    vi: "Cháo gà",
-    en: "Chicken Congee",
-    pron: "chow gah",
-    region: "North",
-    cities: ["Hanoi", "Ho Chi Minh"],
-    types: ["Porridge", "Chicken", "Comfort Food"],
-    ingredients: ["jasmine rice", "chicken", "ginger", "fish sauce", "fried shallots", "spring onions", "white pepper", "lime", "ginger soy dipping sauce"],
-    desc: "Silky smooth rice porridge with hand-pulled chicken, aromatic ginger, and a shower of fried shallots and scallions. The ultimate Vietnamese comfort food — eaten for breakfast, hangover cure, or when sick.",
-    emoji: "🍲",
-    img: "images/chao-ga.jpg",
-    audio: "audio/chao-ga.mp3"
-  },
-
-  // ── LEGAL NOMADS PICKS ──────────────────────
-  {
-    id: "pho-ga",
-    vi: "Phở gà",
-    en: "Chicken Pho",
-    pron: "fuh gah",
-    region: "North",
-    cities: ["Hanoi", "Ho Chi Minh"],
-    types: ["Noodle Soup", "Chicken"],
-    ingredients: ["rice noodles", "chicken broth", "poached chicken", "ginger", "star anise", "fried shallots", "spring onions", "basil", "lime", "chili"],
-    desc: "The lighter, cleaner sibling of beef pho. A delicate golden broth with tender pulled chicken. Jodi Ettenberg's go-to when sick — 'all I want is chicken noodle soup, and this is the Vietnamese version done right.'",
-    emoji: "🐓",
-    img: "images/pho-ga.jpg",
-    audio: "audio/pho-ga.mp3"
-  },
-  {
-    id: "bun-thit-nuong",
-    vi: "Bún thịt nướng",
-    en: "Grilled Pork Vermicelli",
-    pron: "boon tit noong",
-    region: "South",
-    cities: ["Ho Chi Minh"],
-    types: ["Noodles", "Pork", "Grilled"],
-    ingredients: ["rice vermicelli", "charcoal-grilled marinated pork", "fried spring rolls", "pickled daikon", "carrot", "cucumber", "crushed peanuts", "fried shallots", "fresh herbs", "nước chấm"],
-    desc: "A Saigon staple abbreviated 'BTN' by food insiders. A bowl of cool vermicelli topped with smoky grilled pork, crispy spring rolls, pickled veg, and herbs — all drenched in nước chấm dipping sauce. Perfect any time of day.",
-    emoji: "🥗",
-    img: "images/bun-thit-nuong.jpg",
-    audio: "audio/bun-thit-nuong.mp3"
-  },
-  {
-    id: "bun-mam",
-    vi: "Bún mắm",
-    en: "Fermented Fish Noodle Soup",
-    pron: "boon mahm",
-    region: "South",
-    cities: ["Ho Chi Minh", "Can Tho"],
-    types: ["Noodle Soup", "Seafood", "Pork"],
-    ingredients: ["thick rice noodles", "fermented fish paste broth", "shrimp", "pork belly", "squid", "eggplant", "lemongrass", "fresh herbs", "banana blossom", "bean sprouts"],
-    desc: "Jodi's original reason for falling in love with Saigon — a 'sweet-and-sour' fermented fish broth that sounds alarming but tastes extraordinary. Rich, funky, and complex. Often full of locals, tourists walk right past it.",
-    emoji: "🦑",
-    img: "images/bun-mam.jpg",
-    audio: "audio/bun-mam.mp3"
-  },
-  {
-    id: "banh-canh-cua",
-    vi: "Bánh canh cua",
-    en: "Thick Crab Noodle Soup",
-    pron: "bahn kahn koo-ah",
-    region: "South",
-    cities: ["Ho Chi Minh"],
-    types: ["Noodle Soup", "Crab", "Seafood"],
-    ingredients: ["thick tapioca noodles", "crab meat", "crab roe", "pork", "fish cake", "fried shallots", "spring onions", "white pepper", "chili"],
-    desc: "Vietnam's answer to udon. Bánh canh noodles are thick and chewy — made from tapioca or rice flour. The cua (crab) version is the most prized: a rich broth packed with chunky crab meat and roe. Deeply satisfying.",
-    emoji: "🦀",
-    img: "images/banh-canh-cua.jpg",
-    audio: "audio/banh-canh-cua.mp3"
-  },
-  {
-    id: "bot-chien",
-    vi: "Bột chiên",
-    en: "Fried Rice Cakes",
-    pron: "boat chee-en",
-    region: "South",
-    cities: ["Ho Chi Minh"],
-    types: ["Fried", "Snack", "Street Food"],
-    ingredients: ["rice flour cakes", "egg", "green onions", "soy sauce", "chili sauce", "bean sprouts", "dried shrimp"],
-    desc: "A greasy, gloriously satisfying Saigon street snack. Chunky squares of rice flour cake fried in lard until crispy, then cracked eggs on top and tossed with green onions. Similar to Singapore's chai tow kueh but distinctly Vietnamese.",
-    emoji: "🟨",
-    img: "images/bot-chien.jpg",
-    audio: "audio/bot-chien.mp3"
-  },
-  {
-    id: "bo-la-lot",
-    vi: "Bò lá lốt",
-    en: "Beef in Betel Leaves",
-    pron: "baw lah lote",
-    region: "South",
-    cities: ["Ho Chi Minh"],
-    types: ["Beef", "Grilled", "Street Food"],
-    ingredients: ["minced beef", "lemongrass", "garlic", "shallots", "fish sauce", "betel leaves", "rice paper", "vermicelli", "fresh herbs", "peanut hoisin sauce"],
-    desc: "Seasoned minced beef and lemongrass wrapped in fragrant betel leaves and grilled over charcoal. The leaves impart a distinctive peppery, herbal char. Served with rice paper for rolling, herbs, and dipping sauce. Unmissable.",
-    emoji: "🍃",
-    img: "images/bo-la-lot.jpg",
-    audio: "audio/bo-la-lot.mp3"
-  },
-  {
-    id: "bun-moc",
-    vi: "Bún mộc",
-    en: "Mushroom Pork Noodle Soup",
-    pron: "boon moke",
-    region: "North",
-    cities: ["Hanoi"],
-    types: ["Noodle Soup", "Pork", "Mushroom"],
-    ingredients: ["rice vermicelli", "clear pork broth", "pork paste balls", "mushrooms", "pork belly", "fried tofu", "shallots", "spring onions", "white pepper"],
-    desc: "Jodi's go-to reset soup in Saigon — a gentle, clear pork broth with springy pork paste balls and mushrooms. Not flashy, just deeply comforting. Perfect when you're overwhelmed by stronger flavors or just need something quiet.",
-    emoji: "🍄",
-    img: "images/bun-moc.jpg",
-    audio: "audio/bun-moc.mp3"
-  },
-  {
-    id: "com-hen",
-    vi: "Cơm hến",
-    en: "Baby Clam Rice",
-    pron: "kum hen",
-    region: "Central",
-    cities: ["Hue"],
-    types: ["Rice", "Seafood", "Clam"],
-    ingredients: ["cold rice", "tiny baby clams", "pork skin", "fried peanuts", "sesame", "banana blossom", "fresh herbs", "chili", "fermented shrimp paste", "lemongrass"],
-    desc: "One of Hue's most beloved and unusual dishes — cold leftover rice topped with tiny baby clams stir-fried in lemongrass, fermented shrimp paste, and chili. Loud, funky, and complex. Eaten for breakfast by locals on the Perfume River islands.",
-    emoji: "🐚",
-    img: "images/com-hen.jpg",
-    audio: "audio/com-hen.mp3"
-  },
-  {
-    id: "bun-hen",
-    vi: "Bún hến",
-    en: "Baby Clam Noodles",
-    pron: "boon hen",
-    region: "Central",
-    cities: ["Hue"],
-    types: ["Noodles", "Seafood", "Clam"],
-    ingredients: ["thin rice vermicelli", "tiny baby clams", "lemongrass", "fermented shrimp paste", "chili", "peanuts", "banana blossom", "fresh herbs", "bean sprouts"],
-    desc: "The noodle version of cơm hến — same intensely flavored baby clam topping (lemongrass, shrimp paste, chili) but served over thin vermicelli instead of cold rice. A Hue specialty that Jodi sought out on her third day in the city.",
-    emoji: "🦪",
-    img: "images/bun-hen.jpg",
-    audio: "audio/bun-hen.mp3"
-  },
-  {
-    id: "nem-lui",
-    vi: "Nem lui",
-    en: "Lemongrass Pork Skewers",
-    pron: "nem loo-ee",
-    region: "Central",
-    cities: ["Hue"],
-    types: ["Grilled", "Pork", "Skewer"],
-    ingredients: ["minced pork", "lemongrass stalks", "garlic", "shallots", "chili", "rice paper", "fresh herbs", "star fruit", "green banana", "hoisin peanut sauce"],
-    desc: "Pork seasoned with garlic and lemongrass, moulded around lemongrass stalks and grilled over charcoal. Wrap in rice paper with fresh herbs, star fruit slices, and green banana. The lemongrass skewer perfumes the meat as it cooks.",
-    emoji: "🍢",
-    img: "images/nem-lui.jpg",
-    audio: "audio/nem-lui.mp3"
-  },
-  {
-    id: "banh-trang-nuong",
-    vi: "Bánh tráng nướng",
-    en: "Vietnamese Rice Pizza",
-    pron: "bahn trang noong",
-    region: "Central",
-    cities: ["Da Lat", "Hue"],
-    types: ["Street Food", "Snack", "Egg"],
-    ingredients: ["rice paper", "egg", "dried shrimp", "spring onions", "pork floss", "chili sauce", "mayonnaise", "quail egg"],
-    desc: "Street vendors grill a rice paper cracker over coals, crack an egg on top, scatter dried shrimp, spring onions and pork floss. The result is a crispy 'pizza' — crunchy, eggy, savory, and impossible to stop eating. A Da Lat icon.",
-    emoji: "🍕",
-    img: "images/banh-trang-nuong.jpg",
-    audio: "audio/banh-trang-nuong.mp3"
-  },
-  {
-    id: "banh-ep",
-    vi: "Bánh ép",
-    en: "Pressed Rice Pancake",
-    pron: "bahn ep",
-    region: "Central",
-    cities: ["Hue"],
-    types: ["Street Food", "Snack", "Pork"],
-    ingredients: ["thin rice pancake", "pork belly", "quail egg", "dried shrimp", "spring onion", "soy sauce", "chili"],
-    desc: "A Hue street snack that stopped Jodi before she even made it into the Old City gates. A thin rice wafer pressed flat on a hot iron griddle with pork, egg, and dried shrimp until crispy. Eaten folded, straight from the griddle.",
-    emoji: "🫓",
-    img: "images/banh-ep.jpg",
-    audio: "audio/banh-ep.mp3"
-  },
-  {
-    id: "banh-khoai",
-    vi: "Bánh khoái",
-    en: "Hue Crispy Pancake",
-    pron: "bahn khwhy",
-    region: "Central",
-    cities: ["Hue"],
-    types: ["Pancake", "Shrimp", "Pork"],
-    ingredients: ["rice flour batter", "egg", "shrimp", "pork", "bean sprouts", "star fruit", "green banana", "peanut sesame dipping sauce"],
-    desc: "A Hue specialty highlighted by Legal Nomads. Similar to bánh xèo but thicker and crispier, stuffed with shrimp and pork, and served with a rich peanut-sesame dipping sauce plus tart fruit and herbs.",
-    emoji: "🥞",
-    img: "images/banh-khoai.jpg",
-    audio: "audio/banh-khoai.mp3"
-  },
-  {
-    id: "banh-trang-trung",
-    vi: "Bánh tráng trứng",
-    en: "Egg Rice Paper",
-    pron: "bahn trang troong",
-    region: "Central",
-    cities: ["Hue"],
-    types: ["Street Food", "Snack", "Egg"],
-    ingredients: ["rice paper", "egg", "dried shrimp", "scallions", "chili sauce", "crispy shallots"],
-    desc: "The Hue street version called out by Legal Nomads: rice paper grilled over charcoal with egg and toppings until crackly and savory. Fast, cheap, and perfect as a walking snack.",
-    emoji: "🍳",
-    img: "images/banh-trang-trung.jpg",
-    audio: "audio/banh-trang-trung.mp3"
-  },
-  {
-    id: "banh-da-xuc-hen",
-    vi: "Bánh đa xúc hến",
-    en: "Clams with Sesame Cracker",
-    pron: "bahn dah sook hen",
-    region: "Central",
-    cities: ["Hue"],
-    types: ["Snack", "Seafood", "Clam"],
-    ingredients: ["toasted sesame rice cracker", "baby clams", "lemongrass", "shrimp paste", "chili", "peanuts", "herbs"],
-    desc: "Legal Nomads notes this as a favorite Hue bite: intensely seasoned baby clams scooped with giant toasted sesame crackers. Crunchy, briny, spicy, and very local.",
-    emoji: "🦪",
-    img: "images/banh-da-xuc-hen.jpg",
-    audio: "audio/banh-da-xuc-hen.mp3"
-  },
-  {
-    id: "banh-tam-bi",
-    vi: "Bánh tằm bì",
-    en: "Silkworm Noodles with Pork Skin",
-    pron: "bahn tahm bee",
-    region: "South",
-    cities: ["Ho Chi Minh"],
-    types: ["Noodles", "Pork", "Coconut"],
-    ingredients: ["thick rice noodles", "shredded pork skin", "coconut cream sauce", "pickled vegetables", "herbs", "roasted rice powder"],
-    desc: "A Saigon and Mekong specialty from Legal Nomads: short thick rice noodles topped with pork skin and a rich coconut sauce. Served with herbs and pickles for balance.",
-    emoji: "🥢",
-    img: "images/banh-tam-bi.jpg",
-    audio: "audio/banh-tam-bi.mp3"
-  },
-  {
-    id: "com-suon",
-    vi: "Cơm sườn",
-    en: "Rice with Grilled Pork Chop",
-    pron: "kum swoon",
-    region: "South",
-    cities: ["Ho Chi Minh"],
-    types: ["Rice", "Pork", "Grilled"],
-    ingredients: ["broken or jasmine rice", "grilled pork chop", "fish sauce", "pickled carrot", "scallion oil", "fried egg"],
-    desc: "Legal Nomads flags this as a core Saigon meal: smoky marinated pork chop over rice, usually with pickles and scallion oil. Straightforward, satisfying, and everywhere.",
-    emoji: "🍖",
-    img: "images/com-suon.jpg",
-    audio: "audio/com-suon.mp3"
-  },
-  {
-    id: "canh-kho-qua-nhoi-thit",
-    vi: "Canh khổ qua nhồi thịt",
-    en: "Stuffed Bitter Melon Soup",
-    pron: "kahn kor kwah nhoy tit",
-    region: "South",
-    cities: ["Ho Chi Minh"],
-    types: ["Soup", "Pork", "Comfort Food"],
-    ingredients: ["bitter melon", "minced pork", "glass noodles", "wood ear mushrooms", "green onions", "clear broth"],
-    desc: "A classic home-style dish featured by Legal Nomads in Saigon food coverage: bitter melon stuffed with seasoned pork in a clear broth. Slightly bitter, deeply savory, and often eaten at family meals.",
-    emoji: "🥬",
-    img: "images/canh-kho-qua-nhoi-thit.jpg",
-    audio: "audio/canh-kho-qua-nhoi-thit.mp3"
-  },
-  {
-    id: "che-chuoi",
-    vi: "Chè chuối",
-    en: "Banana Tapioca Dessert",
-    pron: "chay chwoo-ee",
-    region: "South",
-    cities: ["Ho Chi Minh"],
-    types: ["Dessert", "Sweet", "Coconut"],
-    ingredients: ["banana", "tapioca pearls", "coconut milk", "pandan", "sesame seeds", "peanuts"],
-    desc: "Called out by Legal Nomads as a standout dessert in Saigon: warm bananas simmered in coconut milk with chewy tapioca pearls. Sweet, creamy, and fragrant.",
-    emoji: "🍌",
-    img: "images/che-chuoi.jpg",
-    audio: "audio/che-chuoi.mp3"
-  },
-  {
-    id: "cuon-diep",
-    vi: "Cuốn điệp",
-    en: "Mustard Leaf Rolls",
-    pron: "koon yep",
-    region: "South",
-    cities: ["Ho Chi Minh"],
-    types: ["Spring Roll", "Noodles", "Snack"],
-    ingredients: ["mustard leaves", "rice vermicelli", "tofu", "mushrooms", "sweet peanut sauce"],
-    desc: "From Legal Nomads' Saigon city food guide: mustard leaves rolled around vermicelli, tofu, and mushrooms, served with sweet peanut sauce. A light but satisfying vegetarian street-food bite.",
-    emoji: "🥬",
-    img: "images/cuon-diep.jpg",
-    audio: "audio/cuon-diep.mp3"
-  },
-  {
-    id: "banh-canh",
-    vi: "Bánh canh",
-    en: "Thick Tapioca Noodle Soup",
-    pron: "bahn kahn",
-    region: "South",
-    cities: ["Ho Chi Minh", "Hue"],
-    types: ["Noodle Soup", "Noodles", "Pork"],
-    ingredients: ["thick tapioca noodles", "pork or seafood broth", "fish cake", "scallions", "fried shallots"],
-    desc: "Mentioned in Legal Nomads' Vietnam city food pages. Thick, chewy noodles in a savory broth; versions vary by city and protein.",
-    emoji: "🍜",
-    img: "images/banh-canh.jpg",
-    audio: "audio/banh-canh.mp3"
-  },
-  {
-    id: "canh-cua",
-    vi: "Canh cua",
-    en: "Crab Soup",
-    pron: "kahn koo-ah",
-    region: "North",
-    cities: ["Hanoi"],
-    types: ["Soup", "Crab", "Seafood"],
-    ingredients: ["fresh crab paste", "leafy greens", "taro stems", "broth", "seasonings"],
-    desc: "Referenced in Legal Nomads' Vietnam gluten-free guide. A light Vietnamese crab soup often served with greens and rice.",
-    emoji: "🦀",
-    img: "images/canh-cua.jpg",
-    audio: "audio/canh-cua.mp3"
-  },
-  {
-    id: "nem-ran",
-    vi: "Nem rán",
-    en: "Northern Fried Spring Rolls",
-    pron: "nem rahn",
-    region: "North",
-    cities: ["Hanoi"],
-    types: ["Spring Roll", "Fried", "Pork"],
-    ingredients: ["rice paper", "pork", "mushrooms", "glass noodles", "carrot", "fish sauce"],
-    desc: "Called out in Legal Nomads' Vietnam food coverage. The northern style of fried spring rolls, close cousin to southern chả giò.",
-    emoji: "🥟",
-    img: "images/nem-ran.jpg",
-    audio: "audio/nem-ran.mp3"
-  },
-  {
-    id: "banh-trang-cuon",
-    vi: "Bánh tráng cuốn",
-    en: "Rice Paper Rolls",
-    pron: "bahn trang koon",
-    region: "South",
-    cities: ["Ho Chi Minh"],
-    types: ["Street Food", "Snack", "Spring Roll"],
-    ingredients: ["rice paper", "herbs", "pickled vegetables", "protein filling", "dipping sauce"],
-    desc: "Featured in Legal Nomads' Saigon writing. Soft rice paper rolled with fresh fillings and eaten as a quick street snack.",
-    emoji: "🌯",
-    img: "images/banh-trang-cuon.jpg",
-    audio: "audio/banh-trang-cuon.mp3"
-  },
-  {
-    id: "banh-chung",
-    vi: "Bánh chưng",
-    en: "Square Sticky Rice Cake",
-    pron: "bahn choong",
-    region: "North",
-    cities: ["Hanoi"],
-    types: ["Rice", "Pork", "Snack"],
-    ingredients: ["glutinous rice", "mung beans", "pork", "dong leaves", "black pepper"],
-    desc: "Mentioned in Legal Nomads' Saigon/Vietnam posts. A traditional Tet rice cake, square-shaped and wrapped in green leaves.",
-    emoji: "🟩",
-    img: "images/banh-chung.jpg",
-    audio: "audio/banh-chung.mp3"
-  },
-  {
-    id: "banh-gio",
-    vi: "Bánh giò",
-    en: "Steamed Pyramid Rice Dumpling",
-    pron: "bahn yaw",
-    region: "North",
-    cities: ["Hanoi"],
-    types: ["Steamed", "Snack", "Pork"],
-    ingredients: ["rice flour dough", "minced pork", "wood ear mushroom", "banana leaf"],
-    desc: "Called out in Legal Nomads' Vietnam content. A soft, savory steamed dumpling wrapped in banana leaf and eaten warm.",
-    emoji: "🫔",
-    img: "images/banh-gio.jpg",
-    audio: "audio/banh-gio.mp3"
-  },
-  {
-    id: "hu-tieu-nam-vang",
-    vi: "Hủ tiếu Nam Vang",
-    en: "Phnom Penh-Style Hu Tieu",
-    pron: "hoo tee-ow nahm vahng",
-    region: "South",
-    cities: ["Ho Chi Minh"],
-    types: ["Noodle Soup", "Noodles", "Pork"],
-    ingredients: ["rice noodles", "pork broth", "shrimp", "minced pork", "quail eggs", "garlic chives"],
-    desc: "Explicitly listed on Legal Nomads' Saigon guide. The Phnom Penh-influenced hủ tiếu style, served dry or with broth.",
-    emoji: "🍲",
-    img: "images/hu-tieu-nam-vang.jpg",
-    audio: "audio/hu-tieu-nam-vang.mp3"
-  },
-  {
-    id: "hu-tieu-my-tho",
-    vi: "Hủ tiếu Mỹ Tho",
-    en: "My Tho Hu Tieu",
-    pron: "hoo tee-ow mee taw",
-    region: "South",
-    cities: ["My Tho", "Ho Chi Minh"],
-    types: ["Noodle Soup", "Noodles", "Pork"],
-    ingredients: ["rice noodles", "clear broth", "pork", "seafood", "chives", "fried shallots"],
-    desc: "Also listed in Legal Nomads' Saigon guide. A southern Mekong-style hủ tiếu known for springy noodles and light broth.",
-    emoji: "🍜",
-    img: "images/hu-tieu-my-tho.jpg",
-    audio: "audio/hu-tieu-my-tho.mp3"
-  },
-  {
-    id: "banh-da-cua",
-    vi: "Bánh đa cua",
-    en: "Crab Red Noodle Soup",
-    pron: "bahn da koo-ah",
-    region: "North",
-    cities: ["Hai Phong"],
-    types: ["Noodle Soup", "Crab", "Seafood"],
-    ingredients: ["red rice noodles", "crab broth", "water spinach", "fried shallots", "cha la lot"],
-    desc: "A Hai Phong specialty with chewy red noodles and a sweet-savory crab broth. Commonly ordered at dedicated noodle shops.",
-    emoji: "🦀",
-    img: "images/banh-da-cua.jpg",
-    audio: "audio/banh-da-cua.mp3"
-  },
-  {
-    id: "banh-hoi",
-    vi: "Bánh hỏi",
-    en: "Woven Rice Vermicelli",
-    pron: "bahn hoy",
-    region: "Central",
-    cities: ["Quy Nhon"],
-    types: ["Noodles", "Pork", "Snack"],
-    ingredients: ["woven vermicelli sheets", "scallion oil", "grilled pork", "herbs", "fish sauce"],
-    desc: "Fine woven rice noodles brushed with scallion oil, often served with grilled pork and herbs.",
-    emoji: "🍜",
-    img: "images/banh-hoi.jpg",
-    audio: "audio/banh-hoi.mp3"
-  },
-  {
-    id: "bun-dau-mam-tom",
-    vi: "Bún đậu mắm tôm",
-    en: "Vermicelli, Tofu & Shrimp Paste",
-    pron: "boon dow mum tome",
-    region: "North",
-    cities: ["Hanoi"],
-    types: ["Noodles", "Tofu", "Street Food"],
-    ingredients: ["rice vermicelli", "fried tofu", "fermented shrimp paste", "pork", "herbs", "cucumber"],
-    desc: "A classic Hanoi tray: tofu, noodles, herbs, and pungent mắm tôm. Widely available at casual restaurants.",
-    emoji: "🍽️",
-    img: "images/bun-dau-mam-tom.jpg",
-    audio: "audio/bun-dau-mam-tom.mp3"
-  },
-  {
-    id: "bun-oc",
-    vi: "Bún ốc",
-    en: "Snail Noodle Soup",
-    pron: "boon oke",
-    region: "North",
-    cities: ["Hanoi"],
-    types: ["Noodle Soup", "Seafood", "Shellfish"],
-    ingredients: ["rice vermicelli", "snails", "tomato broth", "vinegar", "herbs", "chili"],
-    desc: "Tangy tomato-based noodle soup with snails, a staple breakfast and lunch dish in Hanoi.",
-    emoji: "🐚",
-    img: "images/bun-oc.jpg",
-    audio: "audio/bun-oc.mp3"
-  },
-  {
-    id: "bun-thang",
-    vi: "Bún thang",
-    en: "Hanoi Chicken & Egg Noodles",
-    pron: "boon thung",
-    region: "North",
-    cities: ["Hanoi"],
-    types: ["Noodle Soup", "Chicken", "Noodles"],
-    ingredients: ["rice vermicelli", "chicken", "egg ribbons", "pork floss", "clear broth", "herbs"],
-    desc: "A refined Hanoi noodle bowl layered with shredded toppings and clear aromatic broth.",
-    emoji: "🍲",
-    img: "images/bun-thang.jpg",
-    audio: "audio/bun-thang.mp3"
-  },
-  {
-    id: "banh-bot-loc",
-    vi: "Bánh bột lọc",
-    en: "Tapioca Shrimp Dumplings",
-    pron: "bahn bot lock",
-    region: "Central",
-    cities: ["Hue"],
-    types: ["Snack", "Shrimp", "Steamed"],
-    ingredients: ["tapioca dough", "shrimp", "pork belly", "fried shallots", "fish sauce"],
-    desc: "Chewy translucent dumplings filled with shrimp and pork, often wrapped in banana leaf in Hue.",
-    emoji: "🥟",
-    img: "images/banh-bot-loc.jpg",
-    audio: "audio/banh-bot-loc.mp3"
-  },
-  {
-    id: "banh-uot",
-    vi: "Bánh ướt",
-    en: "Wet Rice Sheets",
-    pron: "bahn oot",
-    region: "South",
-    cities: ["Ho Chi Minh"],
-    types: ["Rice Roll", "Pork", "Steamed"],
-    ingredients: ["steamed rice sheets", "pork", "bean sprouts", "fried shallots", "fish sauce"],
-    desc: "Thin steamed rice sheets served fresh, often with pork and herbs. Popular breakfast choice.",
-    emoji: "🫔",
-    img: "images/banh-uot.jpg",
-    audio: "audio/banh-uot.mp3"
-  },
-  {
-    id: "banh-can",
-    vi: "Bánh căn",
-    en: "Mini Rice Pancakes",
-    pron: "bahn can",
-    region: "Central",
-    cities: ["Nha Trang"],
-    types: ["Pancake", "Street Food", "Egg"],
-    ingredients: ["rice batter", "quail egg", "scallions", "fish sauce", "green mango"],
-    desc: "Small cup-cooked rice pancakes, usually topped with egg or seafood and eaten with dipping sauce.",
-    emoji: "🥞",
-    img: "images/banh-can.jpg",
-    audio: "audio/banh-can.mp3"
-  },
-  {
-    id: "banh-duc",
-    vi: "Bánh đúc",
-    en: "Savory Rice Cake",
-    pron: "bahn duke",
-    region: "North",
-    cities: ["Hanoi"],
-    types: ["Snack", "Rice", "Steamed"],
-    ingredients: ["rice flour cake", "minced pork", "wood ear mushroom", "fried shallots", "fish sauce"],
-    desc: "Soft savory rice cake topped with minced pork and sauce; a common market and street snack.",
-    emoji: "🍘",
-    img: "images/banh-duc.jpg",
-    audio: "audio/banh-duc.mp3"
-  },
-  {
-    id: "goi-ca",
-    vi: "Gỏi cá",
-    en: "Fish Salad",
-    pron: "goy kah",
-    region: "Central",
-    cities: ["Da Nang"],
-    types: ["Salad", "Fish", "Seafood"],
-    ingredients: ["fresh fish", "toasted rice powder", "herbs", "banana blossom", "sesame sauce"],
-    desc: "Regional fish salad with herbs and rice crackers; often ordered as a shared starter.",
-    emoji: "🐟",
-    img: "images/goi-ca.jpg",
-    audio: "audio/goi-ca.mp3"
-  },
-  {
-    id: "bo-kho",
-    vi: "Bò kho",
-    en: "Vietnamese Beef Stew",
-    pron: "baw kaw",
-    region: "South",
-    cities: ["Ho Chi Minh"],
-    types: ["Beef", "Soup", "Comfort Food"],
-    ingredients: ["beef shank", "carrot", "lemongrass", "star anise", "tomato paste", "baguette"],
-    desc: "Rich beef stew with lemongrass and spices, commonly eaten with bread or noodles.",
-    emoji: "🥘",
-    img: "images/bo-kho.jpg",
-    audio: "audio/bo-kho.mp3"
-  },
-  {
-    id: "thit-kho-tau",
-    vi: "Thịt kho tàu",
-    en: "Braised Pork & Eggs",
-    pron: "tit kaw tao",
-    region: "South",
-    cities: ["Can Tho"],
-    types: ["Pork", "Stew", "Comfort Food"],
-    ingredients: ["pork belly", "eggs", "coconut water", "fish sauce", "caramelized sugar"],
-    desc: "Home-style braised pork with eggs in coconut water. Common in family-run eateries.",
-    emoji: "🍖",
-    img: "images/thit-kho-tau.jpg",
-    audio: "audio/thit-kho-tau.mp3"
-  },
-  {
-    id: "chao-long",
-    vi: "Cháo lòng",
-    en: "Pork Offal Congee",
-    pron: "chow long",
-    region: "North",
-    cities: ["Hanoi"],
-    types: ["Porridge", "Pork", "Comfort Food"],
-    ingredients: ["rice porridge", "pork offal", "blood pudding", "ginger", "scallions"],
-    desc: "Savory congee with assorted pork cuts and offal, a classic local breakfast dish.",
-    emoji: "🍲",
-    img: "images/chao-long.jpg",
-    audio: "audio/chao-long.mp3"
-  },
-  {
-    id: "lau",
-    vi: "Lẩu",
-    en: "Vietnamese Hot Pot",
-    pron: "lao",
-    region: "South",
-    cities: ["Ho Chi Minh"],
-    types: ["Hot Pot", "Soup", "Shared"],
-    ingredients: ["broth", "meat or seafood", "leafy greens", "mushrooms", "noodles", "tofu"],
-    desc: "Tabletop hot pot for sharing, with many regional broth styles and ingredient sets.",
-    emoji: "🍲",
-    img: "images/lau.jpg",
-    audio: "audio/lau.mp3"
-  },
-  {
-    id: "xoi-ga",
-    vi: "Xôi gà",
-    en: "Sticky Rice with Chicken",
-    pron: "soy gah",
-    region: "North",
-    cities: ["Hanoi"],
-    types: ["Rice", "Chicken", "Comfort Food"],
-    ingredients: ["sticky rice", "chicken", "fried shallots", "scallion oil", "soy sauce"],
-    desc: "Glutinous rice topped with chicken, sold at breakfast carts and casual diners.",
-    emoji: "🍚",
-    img: "images/xoi-ga.jpg",
-    audio: "audio/xoi-ga.mp3"
-  },
-  {
-    id: "com-chien",
-    vi: "Cơm chiên",
-    en: "Fried Rice",
-    pron: "kum chien",
-    region: "South",
-    cities: ["Ho Chi Minh"],
-    types: ["Rice", "Fried", "Pork"],
-    ingredients: ["rice", "egg", "vegetables", "pork or seafood", "soy sauce", "scallions"],
-    desc: "Vietnamese fried rice found everywhere from family restaurants to street stalls.",
-    emoji: "🍛",
-    img: "images/com-chien.jpg",
-    audio: "audio/com-chien.mp3"
-  },
-  {
-    id: "com-ga-quang-nam",
-    vi: "Cơm gà Quảng Nam",
-    en: "Quang Nam Chicken Rice",
-    pron: "kum gah kwang nahm",
-    region: "Central",
-    cities: ["Hoi An"],
-    types: ["Rice", "Chicken", "Comfort Food"],
-    ingredients: ["turmeric rice", "shredded chicken", "herbs", "onion", "chili sauce"],
-    desc: "Central Vietnam chicken rice, fragrant and savory, commonly served at lunch spots.",
-    emoji: "🍗",
-    img: "images/com-ga-quang-nam.jpg",
-    audio: "audio/com-ga-quang-nam.mp3"
-  },
-  {
-    id: "sup-mang-cua",
-    vi: "Súp măng cua",
-    en: "Crab Asparagus Soup",
-    pron: "soop mang koo-ah",
-    region: "South",
-    cities: ["Ho Chi Minh"],
-    types: ["Soup", "Crab", "Seafood"],
-    ingredients: ["crab meat", "asparagus", "egg white", "starch thickener", "cilantro"],
-    desc: "Light thickened crab soup often served as a starter at Vietnamese restaurants.",
-    emoji: "🥣",
-    img: "images/sup-mang-cua.jpg",
-    audio: "audio/sup-mang-cua.mp3"
-  },
-  {
-    id: "bun-ca",
-    vi: "Bún cá",
-    en: "Fish Noodle Soup",
-    pron: "boon kah",
-    region: "North",
-    cities: ["Hanoi"],
-    types: ["Noodle Soup", "Fish", "Seafood"],
-    ingredients: ["rice vermicelli", "fish", "tomato broth", "dill", "spring onions"],
-    desc: "Fish-based noodle soup, especially popular in northern Vietnam.",
-    emoji: "🐟",
-    img: "images/bun-ca.jpg",
-    audio: "audio/bun-ca.mp3"
-  },
-  {
-    id: "bun-cha-ca",
-    vi: "Bún chả cá",
-    en: "Fish Cake Noodle Soup",
-    pron: "boon cha kah",
-    region: "Central",
-    cities: ["Da Nang"],
-    types: ["Noodle Soup", "Fish", "Seafood"],
-    ingredients: ["rice noodles", "fish cakes", "pineapple", "tomato", "herbs", "chili"],
-    desc: "Da Nang style noodle soup with fish cakes and sweet-sour broth notes.",
-    emoji: "🍜",
-    img: "images/bun-cha-ca.jpg",
-    audio: "audio/bun-cha-ca.mp3"
+const COUNTRIES = [
+  {
+    id: "vn", name: "Vietnam", native: "Việt Nam", flag: "🇻🇳", dishCount: 72,
+    subtitle: "Tap any dish · Aunty will know what you want",
+    langs: { vi: { tts: "vi-VN", label: "Vietnamese", short: "VI" } }
+  },
+  {
+    id: "cn", name: "China", native: "中国", flag: "🇨🇳", dishCount: 202,
+    subtitle: "Tap any dish · Show the characters, play the sound",
+    langs: {
+      "zh-CN": { tts: "zh-CN", label: "Mandarin",  short: "普" },
+      "yue":   { tts: "zh-HK", label: "Cantonese", short: "粵" }
+    }
   }
 ];
 
-// ═══════════════════════════════════════════════
-// FILTER CONFIG
-// ═══════════════════════════════════════════════
-const filterGroups = {
-  all: [],
-  region: [
-    { key: "North",   label: "🧧 North",   icon: "🧧" },
-    { key: "Central", label: "🌸 Central",  icon: "🌸" },
-    { key: "South",   label: "🌴 South",    icon: "🌴" }
-  ],
-  city: [
-    { key: "Hanoi",         label: "🏛 Hanoi",         icon: "🏛" },
-    { key: "Ho Chi Minh",   label: "🌆 Saigon",        icon: "🌆" },
-    { key: "Hue",           label: "🏯 Hue",           icon: "🏯" },
-    { key: "Hoi An",        label: "🏮 Hoi An",        icon: "🏮" },
-    { key: "Da Nang",       label: "🌊 Da Nang",       icon: "🌊" },
-    { key: "Vung Tau",      label: "⛱ Vung Tau",      icon: "⛱" },
-    { key: "Can Tho",       label: "🚤 Can Tho",       icon: "🚤" },
-    { key: "Da Lat",        label: "🌿 Da Lat",        icon: "🌿" },
-    { key: "My Tho",        label: "🛶 My Tho",        icon: "🛶" },
-    { key: "Hai Phong",     label: "⚓ Hai Phong",      icon: "⚓" },
-    { key: "Quy Nhon",      label: "🏖 Quy Nhon",       icon: "🏖" },
-    { key: "Nha Trang",     label: "🌴 Nha Trang",      icon: "🌴" }
-  ],
-  type: [
-    { key: "Noodle Soup", label: "🍜 Noodle Soup", icon: "🍜" },
-    { key: "Noodles",     label: "🍝 Noodles",     icon: "🍝" },
-    { key: "Rice",        label: "🍚 Rice",         icon: "🍚" },
-    { key: "Spring Roll", label: "🌯 Spring Roll",  icon: "🌯" },
-    { key: "Grilled",     label: "🔥 Grilled",      icon: "🔥" },
-    { key: "Shrimp",      label: "🦐 Shrimp",       icon: "🦐" },
-    { key: "Beef",        label: "🥩 Beef",         icon: "🥩" },
-    { key: "Pork",        label: "🐷 Pork",         icon: "🐷" },
-    { key: "Seafood",     label: "🦞 Seafood",      icon: "🦞" },
-    { key: "Crab",        label: "🦀 Crab",         icon: "🦀" },
-    { key: "Spicy",       label: "🌶 Spicy",        icon: "🌶" },
-    { key: "Dessert",     label: "🍮 Dessert",      icon: "🍮" },
-    { key: "Comfort Food",label: "🫂 Comfort",      icon: "🫂" },
-    { key: "Skewer",      label: "🍢 Skewer",       icon: "🍢" },
-    { key: "Snack",       label: "🍿 Snack",         icon: "🍿" },
-    { key: "Mushroom",    label: "🍄 Mushroom",      icon: "🍄" },
-    { key: "Clam",        label: "🦪 Clam",          icon: "🦪" }
-  ]
-};
-
-// ═══════════════════════════════════════════════
-// PHRASE DATA
-// ═══════════════════════════════════════════════
-const phrases = [
-  // ── ORDERING ──────────────────────────────
-  { id:"cho-toi-mot-to",    vi:"Cho tôi một tô",     en:"One bowl, please",          pron:"chaw toy moat toh",  category:"Ordering"   },
-  { id:"cho-toi-cai-nay",   vi:"Cho tôi cái này",    en:"I'll have that one",        pron:"chaw toy kai nay",   category:"Ordering"   },
-  { id:"khong-cay",         vi:"Không cay",           en:"Not spicy",                 pron:"khong kai",          category:"Ordering"   },
-  { id:"cay-it-thoi",       vi:"Cay ít thôi",         en:"Just a little spicy",       pron:"kai it thoy",        category:"Ordering"   },
-  { id:"cho-them-rau",      vi:"Cho thêm rau",        en:"More herbs, please",        pron:"chaw tem rao",       category:"Ordering"   },
-  { id:"de-mang-ve",        vi:"Để mang về",          en:"To take away",              pron:"deh mang veh",       category:"Ordering"   },
-  // ── PAYING ────────────────────────────────
-  { id:"bao-nhieu-tien",    vi:"Bao nhiêu tiền?",     en:"How much?",                 pron:"bow nyew tyen",      category:"Paying"     },
-  { id:"tinh-tien",         vi:"Tính tiền",           en:"Check, please",             pron:"ting tyen",          category:"Paying"     },
-  { id:"dat-qua",           vi:"Đắt quá",             en:"Too expensive!",            pron:"dat kwah",           category:"Paying"     },
-  // ── DIETARY ───────────────────────────────
-  { id:"khong-thit-heo",    vi:"Không thịt heo",      en:"No pork",                   pron:"khong tit hay-oh",   category:"Dietary"    },
-  { id:"khong-hai-san",     vi:"Không hải sản",       en:"No seafood",                pron:"khong hai san",      category:"Dietary"    },
-  { id:"toi-an-chay",       vi:"Tôi ăn chay",         en:"I'm vegetarian",            pron:"toy an chai",        category:"Dietary"    },
-  { id:"toi-bi-di-ung",     vi:"Tôi bị dị ứng",       en:"I have an allergy",         pron:"toy bee zee oong",   category:"Dietary"    },
-  // ── COMPLIMENTS ───────────────────────────
-  { id:"ngon-lam",          vi:"Ngon lắm!",           en:"Delicious!",                pron:"ngon lum",           category:"Compliments"},
-  { id:"ngon-qua",          vi:"Ngon quá!",           en:"So good!",                  pron:"ngon kwah",          category:"Compliments"},
-  { id:"tuyet-voi",         vi:"Tuyệt vời!",          en:"Amazing!",                  pron:"twyet voy",          category:"Compliments"},
-  // ── BASICS ────────────────────────────────
-  { id:"xin-chao",          vi:"Xin chào",            en:"Hello",                     pron:"sin chow",           category:"Basics"     },
-  { id:"cam-on",            vi:"Cảm ơn",              en:"Thank you",                 pron:"gahm un",            category:"Basics"     },
-  { id:"xin-loi",           vi:"Xin lỗi",             en:"Excuse me / Sorry",         pron:"sin loy",            category:"Basics"     },
-  { id:"khong-hieu",        vi:"Không hiểu",          en:"I don't understand",        pron:"khong hyew",         category:"Basics"     },
-];
+const MEDIA_CACHE = "nnn-media-v1";
+const PHRASE_CATEGORIES = ["Ordering", "Paying", "Dietary", "Compliments", "Basics"];
+const CATEGORY_EMOJI = { Ordering:"🛎️", Paying:"💵", Dietary:"🥗", Compliments:"😋", Basics:"👋" };
 
 // ═══════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════
-let activeGroup = "all";
-let activeFilter = null;
+let country = COUNTRIES[0];   // active country meta
+let data = null;              // active country data (dishes, phrases, regions, cities, types)
+const dataCache = {};         // id → loaded data
+
+let activeGroup = "all";      // which pill row is showing: all | region | city | type
+let activeRegion = null;
+let activeCity = null;
+let activeType = null;
+let phraseLang = null;        // selected phrase language for multi-language countries
+
 let currentDish = null;
 let currentAudio = null;
 let sheetPlaying = false;
 let searchQuery = "";
-let currentMode = "dishes"; // "dishes" | "phrases"
+let currentMode = "dishes";   // "dishes" | "phrases"
 let playingPhraseId = null;
+
+function store(key, val) {
+  try { if (val === undefined) return localStorage.getItem(key); localStorage.setItem(key, val); } catch (e) { return null; }
+}
+
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+}
+
+const dishById = id => data.dishes.find(d => d.id === id);
+const phraseById = id => data.phrases.find(p => p.id === id);
+const langOf = item => country.langs[item.lang] || Object.values(country.langs)[0];
+const isMultiLang = () => Object.keys(country.langs).length > 1;
+
+// ═══════════════════════════════════════════════
+// COUNTRY LOADING / SWITCHING
+// ═══════════════════════════════════════════════
+async function loadCountryData(id) {
+  if (dataCache[id]) return dataCache[id];
+  const res = await fetch(`data/${id}.json`);
+  if (!res.ok) throw new Error("Failed to load " + id);
+  dataCache[id] = await res.json();
+  return dataCache[id];
+}
+
+async function selectCountry(id, { save = true } = {}) {
+  const meta = COUNTRIES.find(c => c.id === id) || COUNTRIES[0];
+  stopAudio();
+  data = await loadCountryData(meta.id);
+  country = meta;
+  if (save) store("nnn-country", meta.id);
+
+  // Reset filters & search for the new country
+  activeGroup = "all"; activeRegion = activeCity = activeType = null;
+  searchQuery = "";
+  document.getElementById("searchInput").value = "";
+  document.getElementById("searchClear").classList.remove("visible");
+  phraseLang = Object.keys(country.langs)[0];
+
+  document.getElementById("countryFlag").textContent = country.flag;
+  document.getElementById("countryName").textContent = country.name;
+  document.getElementById("subtitle").textContent = country.subtitle;
+  document.documentElement.lang = "en";
+  document.querySelectorAll(".filter-tab").forEach(t => t.classList.toggle("active", t.dataset.group === "all"));
+
+  renderPills();
+  if (currentMode === "dishes") renderGrid(); else renderPhrases();
+  window.scrollTo(0, 0);
+
+  // Save this country's photos & audio for offline use (in the background)
+  cacheCountryMedia(country.id);
+}
+
+// ═══════════════════════════════════════════════
+// OFFLINE MEDIA (per country)
+// ═══════════════════════════════════════════════
+const offlineState = {}; // id → { done, total, running, complete }
+
+function mediaUrls(d) {
+  const urls = [];
+  d.dishes.forEach(x => { if (x.img) urls.push(x.img); if (x.audio) urls.push(x.audio); });
+  d.phrases.forEach(p => { if (p.audio) urls.push(p.audio); });
+  return urls;
+}
+
+async function checkOffline(id) {
+  if (!("caches" in window)) return null;
+  try {
+    const d = await loadCountryData(id);
+    const cache = await caches.open(MEDIA_CACHE);
+    const urls = mediaUrls(d);
+    const keys = new Set((await cache.keys()).map(r => new URL(r.url).pathname));
+    const base = new URL(".", location.href).pathname;
+    const done = urls.filter(u => keys.has(base + u)).length;
+    const st = offlineState[id] || (offlineState[id] = {});
+    Object.assign(st, { done, total: urls.length, complete: done >= urls.length });
+    return st;
+  } catch (e) { return null; }
+}
+
+async function cacheCountryMedia(id) {
+  if (!("caches" in window)) return;
+  const st = offlineState[id] || (offlineState[id] = {});
+  if (st.running) return;
+  try {
+    const d = await loadCountryData(id);
+    const cache = await caches.open(MEDIA_CACHE);
+    const urls = mediaUrls(d);
+    const have = new Set((await cache.keys()).map(r => r.url));
+    const todo = urls.filter(u => !have.has(new URL(u, location.href).href));
+    Object.assign(st, { running: true, total: urls.length, done: urls.length - todo.length, complete: false });
+    renderOfflineStatus();
+    for (let i = 0; i < todo.length; i += 6) {
+      await Promise.allSettled(todo.slice(i, i + 6).map(u => cache.add(u)));
+      st.done = Math.min(urls.length, st.done + todo.slice(i, i + 6).length);
+      renderOfflineStatus();
+    }
+    st.complete = true;
+  } catch (e) {
+    console.warn("[offline] caching failed", e);
+  } finally {
+    st.running = false;
+    renderOfflineStatus();
+  }
+}
+
+function offlineLabel(id) {
+  const st = offlineState[id];
+  if (!st || !st.total) return "";
+  if (st.running) return `Saving for offline… ${Math.round(100 * st.done / st.total)}%`;
+  if (st.complete) return "✓ Available offline";
+  return `${Math.round(100 * st.done / st.total)}% saved offline`;
+}
+
+function renderOfflineStatus() {
+  const el = document.getElementById("offlineStatus");
+  const st = offlineState[country.id];
+  el.textContent = st && st.running ? offlineLabel(country.id) : "";
+  el.classList.toggle("visible", !!(st && st.running));
+  if (document.getElementById("countrySheet").classList.contains("open")) renderCountryList();
+}
+
+// ═══════════════════════════════════════════════
+// COUNTRY PICKER
+// ═══════════════════════════════════════════════
+function openCountryPicker() {
+  renderCountryList();
+  document.getElementById("countryOverlay").classList.add("open");
+  document.getElementById("countrySheet").classList.add("open");
+  history.pushState({ picker: true }, "");
+  COUNTRIES.forEach(c => checkOffline(c.id).then(renderCountryList));
+}
+
+function closeCountryPicker(fromPop = false) {
+  const sheet = document.getElementById("countrySheet");
+  if (!sheet.classList.contains("open")) return;
+  sheet.classList.remove("open");
+  document.getElementById("countryOverlay").classList.remove("open");
+  if (!fromPop) history.back();
+}
+
+function renderCountryList() {
+  document.getElementById("countryList").innerHTML = COUNTRIES.map(c => {
+    const st = offlineState[c.id];
+    const status = offlineLabel(c.id);
+    const showBtn = "caches" in window && !(st && (st.running || st.complete));
+    return `
+      <div class="country-row ${c.id === country.id ? "active" : ""}" onclick="pickCountry('${c.id}')">
+        <span class="country-row-flag">${c.flag}</span>
+        <div class="country-row-text">
+          <div class="country-row-name">${esc(c.name)} <span class="country-row-native">${esc(c.native)}</span></div>
+          <div class="country-row-sub">${c.dishCount} dishes · ${Object.values(c.langs).map(l => l.label).join(" + ")}</div>
+          ${status ? `<div class="country-row-status ${st && st.complete ? "ok" : ""}">${status}</div>` : ""}
+        </div>
+        ${showBtn ? `<button class="offline-btn" onclick="event.stopPropagation(); cacheCountryMedia('${c.id}')" aria-label="Download ${esc(c.name)} for offline">⤓ Offline</button>` : ""}
+        ${c.id === country.id ? `<span class="country-row-check">✓</span>` : ""}
+      </div>`;
+  }).join("");
+}
+
+async function pickCountry(id) {
+  closeCountryPicker();
+  if (id !== country.id) await selectCountry(id);
+}
 
 // ═══════════════════════════════════════════════
 // AUDIO
 // ═══════════════════════════════════════════════
-function playDish(dish, fromSheet = false) {
-  // Stop any current audio
+function playItem(item, { onStart, onEnd, label }) {
   stopAudio();
-
-  const bar = document.getElementById("nowPlayingBar");
-  const barText = document.getElementById("nowPlayingText");
-
-  // Try file first, fallback to Web Speech API
-  const audio = new Audio(dish.audio);
+  let settled = false;
+  let fellBack = false;
+  const audio = new Audio(item.audio);
   audio.volume = 1.0;
 
+  const fallback = () => {
+    if (fellBack || settled) return;
+    fellBack = true;
+    audio.oncanplaythrough = audio.onerror = null;
+    speakFallback(item, { onStart, onEnd, label });
+  };
+
   audio.addEventListener("canplaythrough", () => {
+    if (fellBack || settled) return;
+    settled = true;
     currentAudio = audio;
-    audio.play().catch(() => speakFallback(dish, fromSheet));
-    showNowPlaying(dish.vi);
-    if (fromSheet) setSheetPlaying(true);
-  });
+    audio.play().then(() => { showNowPlaying(label); onStart && onStart(); })
+      .catch(() => { settled = false; fallback(); });
+  }, { once: true });
 
   audio.addEventListener("ended", () => {
     hideNowPlaying();
-    if (fromSheet) setSheetPlaying(false);
-    updateCardBadge(dish.id, false);
     currentAudio = null;
+    onEnd && onEnd();
   });
 
-  audio.addEventListener("error", () => {
-    // File not found → use Web Speech API
-    speakFallback(dish, fromSheet);
-  });
-
-  // Set a short timeout: if audio doesn't load quickly, fallback
-  setTimeout(() => {
-    if (audio.readyState < 3) {
-      audio.onerror = null;
-      audio.oncanplaythrough = null;
-      speakFallback(dish, fromSheet);
-    }
-  }, 800);
-
-  updateCardBadge(dish.id, true);
+  audio.addEventListener("error", fallback);
+  setTimeout(() => { if (!settled && audio.readyState < 3) fallback(); }, 1200);
 }
 
-function speakFallback(dish, fromSheet = false) {
-  if (!window.speechSynthesis) return;
-
-  const utter = new SpeechSynthesisUtterance(dish.vi);
-  utter.lang = "vi-VN";
+function speakFallback(item, { onStart, onEnd, label }) {
+  if (!window.speechSynthesis) { onEnd && onEnd(); return; }
+  const lang = langOf(item).tts;
+  const utter = new SpeechSynthesisUtterance(item.tts || item.native);
+  utter.lang = lang;
   utter.rate = 0.85;
-  utter.pitch = 1.0;
-  utter.volume = 1.0;
-
-  // Try to find a Vietnamese voice
   const voices = speechSynthesis.getVoices();
-  const viVoice = voices.find(v => v.lang.startsWith("vi")) ||
-                  voices.find(v => v.lang.startsWith("vi-VN"));
-  if (viVoice) utter.voice = viVoice;
-
-  utter.onstart = () => {
-    showNowPlaying(dish.vi);
-    if (fromSheet) setSheetPlaying(true);
-  };
-
-  utter.onend = () => {
-    hideNowPlaying();
-    if (fromSheet) setSheetPlaying(false);
-    updateCardBadge(dish.id, false);
-  };
-
-  utter.onerror = () => {
-    hideNowPlaying();
-    if (fromSheet) setSheetPlaying(false);
-    updateCardBadge(dish.id, false);
-  };
-
+  const voice = voices.find(v => v.lang.replace("_", "-") === lang) ||
+                voices.find(v => v.lang.startsWith(lang.split("-")[0]));
+  if (voice) utter.voice = voice;
+  utter.onstart = () => { showNowPlaying(label); onStart && onStart(); };
+  utter.onend = utter.onerror = () => { hideNowPlaying(); onEnd && onEnd(); };
   speechSynthesis.speak(utter);
 }
 
+function playDish(dish, fromSheet = false) {
+  updateCardBadge(dish.id, true);
+  playItem(dish, {
+    label: dish.native,
+    onStart: () => { if (fromSheet) setSheetPlaying(true); },
+    onEnd: () => { if (fromSheet) setSheetPlaying(false); updateCardBadge(dish.id, false); }
+  });
+}
+
+function playDishById(id) { const d = dishById(id); if (d) playDish(d); }
+
 function stopAudio() {
-  if (currentAudio) {
-    currentAudio.pause();
-    currentAudio = null;
-  }
-  if (window.speechSynthesis) {
-    speechSynthesis.cancel();
-  }
+  if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+  if (window.speechSynthesis) speechSynthesis.cancel();
   hideNowPlaying();
   setSheetPlaying(false);
-  // Clear all card badges
   document.querySelectorAll(".play-badge.playing").forEach(b => b.classList.remove("playing"));
+  document.querySelectorAll(".phrase-card.playing").forEach(c => c.classList.remove("playing"));
 }
 
 function updateCardBadge(id, playing) {
-  const card = document.querySelector(`[data-id="${id}"] .play-badge`);
+  const card = document.querySelector(`.card[data-id="${id}"] .play-badge`);
   if (card) card.classList.toggle("playing", playing);
 }
 
 function showNowPlaying(text) {
-  const bar = document.getElementById("nowPlayingBar");
   document.getElementById("nowPlayingText").textContent = text;
-  bar.classList.add("visible");
+  document.getElementById("nowPlayingBar").classList.add("visible");
 }
 
 function hideNowPlaying() {
   document.getElementById("nowPlayingBar").classList.remove("visible");
 }
 
+const SPEAKER_SVG = (size = 40) => `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="white"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const STOP_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="white"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>`;
+
 function setSheetPlaying(playing) {
   sheetPlaying = playing;
   const btn = document.getElementById("sheetSpeakBtn");
   if (!btn) return;
   btn.classList.toggle("playing", playing);
-  btn.innerHTML = playing
-    ? `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="white"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>`
-    : `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="white"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  btn.innerHTML = playing ? STOP_SVG : SPEAKER_SVG(40);
 }
 
 function speakFromSheet() {
-  if (sheetPlaying) {
-    stopAudio();
-  } else if (currentDish) {
-    playDish(currentDish, true);
-  }
+  if (sheetPlaying) stopAudio();
+  else if (currentDish) playDish(currentDish, true);
 }
 
 // ═══════════════════════════════════════════════
@@ -1987,24 +1157,22 @@ function speakFromSheet() {
 // ═══════════════════════════════════════════════
 function setMode(mode) {
   currentMode = mode;
-  document.querySelectorAll(".mode-tab").forEach(t =>
-    t.classList.toggle("active", t.dataset.mode === mode)
-  );
+  document.querySelectorAll(".mode-tab").forEach(t => t.classList.toggle("active", t.dataset.mode === mode));
   const isDishes = mode === "dishes";
   document.getElementById("dishControls").style.display = isDishes ? "" : "none";
   document.getElementById("resultsLabel").style.display = isDishes ? "" : "none";
   document.getElementById("grid").style.display = isDishes ? "" : "none";
   document.getElementById("phraseGrid").style.display = isDishes ? "none" : "block";
-  if (isDishes) renderGrid();
-  else renderPhrases();
   stopAudio();
+  if (isDishes) renderGrid(); else renderPhrases();
+  window.scrollTo(0, 0);
 }
 
 // ═══════════════════════════════════════════════
 // SEARCH
 // ═══════════════════════════════════════════════
 function onSearch(e) {
-  searchQuery = e.target.value.toLowerCase();
+  searchQuery = e.target.value.trim();
   document.getElementById("searchClear").classList.toggle("visible", searchQuery.length > 0);
   renderGrid();
 }
@@ -2018,108 +1186,129 @@ function clearSearch() {
 }
 
 // ═══════════════════════════════════════════════
-// PHRASE PLAYBACK
+// PHRASES
 // ═══════════════════════════════════════════════
-function playPhrase(phrase) {
+function playPhrase(id) {
+  const phrase = phraseById(id);
+  if (!phrase) return;
   stopAudio();
   playingPhraseId = phrase.id;
-  document.querySelectorAll(".phrase-card").forEach(c =>
-    c.classList.toggle("playing", c.dataset.id === phrase.id)
-  );
-
-  const audio = new Audio(`audio/phrases/${phrase.id}.mp3`);
-  audio.volume = 1.0;
-  audio.addEventListener("canplaythrough", () => {
-    currentAudio = audio;
-    audio.play().catch(() => phraseSpeakFallback(phrase));
-    showNowPlaying(phrase.vi);
+  document.querySelectorAll(".phrase-card").forEach(c => c.classList.toggle("playing", c.dataset.id === phrase.id));
+  playItem(phrase, {
+    label: phrase.native,
+    onEnd: () => {
+      playingPhraseId = null;
+      document.querySelectorAll(".phrase-card").forEach(c => c.classList.remove("playing"));
+    }
   });
-  audio.addEventListener("ended", () => {
-    currentAudio = null;
-    playingPhraseId = null;
-    hideNowPlaying();
-    document.querySelectorAll(".phrase-card").forEach(c => c.classList.remove("playing"));
-  });
-  audio.addEventListener("error", () => phraseSpeakFallback(phrase));
-  setTimeout(() => {
-    if (audio.readyState < 3) { audio.onerror = null; phraseSpeakFallback(phrase); }
-  }, 800);
 }
 
-function phraseSpeakFallback(phrase) {
-  if (!window.speechSynthesis) return;
-  const utter = new SpeechSynthesisUtterance(phrase.vi);
-  utter.lang = "vi-VN"; utter.rate = 0.8; utter.volume = 1;
-  utter.onstart = () => showNowPlaying(phrase.vi);
-  utter.onend = () => {
-    hideNowPlaying();
-    playingPhraseId = null;
-    document.querySelectorAll(".phrase-card").forEach(c => c.classList.remove("playing"));
-  };
-  speechSynthesis.speak(utter);
+function setPhraseLang(lang) {
+  phraseLang = lang;
+  stopAudio();
+  renderPhrases();
 }
-
-// ═══════════════════════════════════════════════
-// PHRASE RENDERING
-// ═══════════════════════════════════════════════
-const PHRASE_CATEGORIES = ["Ordering", "Paying", "Dietary", "Compliments", "Basics"];
-const CATEGORY_EMOJI = { Ordering:"🛎️", Paying:"💵", Dietary:"🥗", Compliments:"😋", Basics:"👋" };
 
 function renderPhrases() {
   const grid = document.getElementById("phraseGrid");
-  const speakerSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="white"/>
-    <path d="M15.54 8.46a5 5 0 0 1 0 7.07" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M19.07 4.93a10 10 0 0 1 0 14.14" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-  </svg>`;
+  const langs = Object.keys(country.langs);
+  if (!langs.includes(phraseLang)) phraseLang = langs[0];
+  const list = data.phrases.filter(p => !isMultiLang() || p.lang === phraseLang);
 
-  grid.innerHTML = PHRASE_CATEGORIES.map(cat => {
-    const catPhrases = phrases.filter(p => p.category === cat);
+  const langTabs = isMultiLang() ? `
+    <div class="phrase-lang-tabs">
+      ${langs.map(l => `<button class="pill ${l === phraseLang ? "active" : ""}" onclick="setPhraseLang('${l}')">
+        <span class="lang-badge">${country.langs[l].short}</span> ${country.langs[l].label}</button>`).join("")}
+    </div>
+    ${phraseLang === "yue" ? `<div class="phrase-lang-note">Spoken in Guangdong, Hong Kong &amp; Macau</div>` : ""}` : "";
+
+  grid.innerHTML = langTabs + PHRASE_CATEGORIES.map(cat => {
+    const catPhrases = list.filter(p => p.category === cat);
+    if (!catPhrases.length) return "";
     return `
       <div class="phrase-category-label">${CATEGORY_EMOJI[cat]} ${cat}</div>
       ${catPhrases.map(p => `
-        <div class="phrase-card" data-id="${p.id}" onclick="playPhrase(phrases.find(x=>x.id==='${p.id}'))">
+        <div class="phrase-card" data-id="${p.id}" onclick="playPhrase('${p.id}')">
           <div class="phrase-text">
-            <div class="phrase-vi">${p.vi}</div>
-            <div class="phrase-en">${p.en}</div>
-            <div class="phrase-pron">${p.pron}</div>
+            <div class="phrase-vi">${esc(p.native)}</div>
+            ${p.roman ? `<div class="phrase-roman">${esc(p.roman)}</div>` : ""}
+            <div class="phrase-en">${esc(p.en)}</div>
+            <div class="phrase-pron">${esc(p.pron)}</div>
           </div>
-          <div class="phrase-play">${speakerSVG}</div>
-        </div>
-      `).join("")}
-    `;
+          <div class="phrase-play">${SPEAKER_SVG(24)}</div>
+        </div>`).join("")}`;
   }).join("");
 }
 
 // ═══════════════════════════════════════════════
-// FILTER RENDERING
+// FILTERS  (Region → City → Type, combinable)
 // ═══════════════════════════════════════════════
-function renderFilterTabs() {
+function initFilterTabs() {
   document.querySelectorAll(".filter-tab").forEach(tab => {
     tab.addEventListener("click", () => {
       activeGroup = tab.dataset.group;
-      activeFilter = null;
-      document.querySelectorAll(".filter-tab").forEach(t => t.classList.remove("active"));
-      tab.classList.add("active");
+      if (activeGroup === "all") { activeRegion = activeCity = activeType = null; }
+      document.querySelectorAll(".filter-tab").forEach(t => t.classList.toggle("active", t === tab));
       renderPills();
       renderGrid();
     });
   });
 }
 
+const regionOfCity = key => (data.cities.find(c => c.key === key) || {}).region;
+const regionIcon = key => (data.regions.find(r => r.key === key) || {}).icon || "🗺";
+
 function renderPills() {
   const row = document.getElementById("pillsRow");
-  row.innerHTML = "";
+  // Update tab labels to show what's selected
+  const tabLabel = { region: activeRegion || "Region", city: activeCity || "City", type: activeType || "Type" };
+  document.querySelectorAll(".filter-tab").forEach(t => {
+    const g = t.dataset.group;
+    if (tabLabel[g]) {
+      const selected = (g === "region" && activeRegion) || (g === "city" && activeCity) || (g === "type" && activeType);
+      t.textContent = tabLabel[g];
+      t.classList.toggle("has-value", !!selected);
+    }
+  });
 
+  row.innerHTML = "";
   if (activeGroup === "all") return;
 
-  const pills = filterGroups[activeGroup];
-  pills.forEach(p => {
+  let pills = [];
+  if (activeGroup === "region") {
+    pills = data.regions.map(r => ({ key: r.key, label: r.key, icon: r.icon, active: activeRegion === r.key,
+      count: data.dishes.filter(d => matchesRegion(d, r.key)).length }));
+  } else if (activeGroup === "city") {
+    const cities = data.cities.filter(c => !activeRegion || c.region === activeRegion);
+    pills = cities.map(c => ({ key: c.key, label: c.label || c.key, icon: c.icon, active: activeCity === c.key,
+      count: data.dishes.filter(d => d.cities.includes(c.key)).length }));
+    if (activeRegion) {
+      const chip = document.createElement("button");
+      chip.className = "pill scope";
+      chip.innerHTML = `${regionIcon(activeRegion)} ${esc(activeRegion)} <span class="pill-x">✕</span>`;
+      chip.title = "Show cities in all regions";
+      chip.onclick = () => { activeRegion = null; activeCity = null; renderPills(); renderGrid(); };
+      row.appendChild(chip);
+    }
+  } else if (activeGroup === "type") {
+    pills = data.types.map(t => ({ key: t.key, label: t.key, icon: t.icon, active: activeType === t.key,
+      count: data.dishes.filter(d => d.types.includes(t.key)).length }));
+  }
+
+  pills.filter(p => p.count > 0).forEach(p => {
     const btn = document.createElement("button");
-    btn.className = "pill" + (activeFilter === p.key ? " active" : "");
-    btn.innerHTML = `<span class="pill-icon">${p.icon}</span> ${p.key}`;
+    btn.className = "pill" + (p.active ? " active" : "");
+    btn.innerHTML = `<span class="pill-icon">${p.icon}</span> ${esc(p.label)} <span class="pill-count">${p.count}</span>`;
     btn.onclick = () => {
-      activeFilter = activeFilter === p.key ? null : p.key;
+      if (activeGroup === "region") {
+        activeRegion = activeRegion === p.key ? null : p.key;
+        if (activeCity && regionOfCity(activeCity) !== activeRegion) activeCity = null;
+      } else if (activeGroup === "city") {
+        activeCity = activeCity === p.key ? null : p.key;
+        if (activeCity) activeRegion = regionOfCity(activeCity) || activeRegion;
+      } else {
+        activeType = activeType === p.key ? null : p.key;
+      }
       renderPills();
       renderGrid();
     };
@@ -2127,168 +1316,178 @@ function renderPills() {
   });
 }
 
+// A dish belongs to a region if it is from there or is served in one of its cities
+function matchesRegion(d, region) {
+  return d.region === region || d.cities.some(c => regionOfCity(c) === region);
+}
+
 // ═══════════════════════════════════════════════
 // GRID RENDERING
 // ═══════════════════════════════════════════════
-function stripDiacritics(s) {
-  return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+function fold(s) {
+  return String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/g, "d").replace(/Đ/g, "d").toLowerCase();
 }
 
 function getFilteredDishes() {
-  let result = dishes;
-
-  if (activeGroup !== "all" && activeFilter) {
-    result = result.filter(d => {
-      if (activeGroup === "region") return d.region === activeFilter;
-      if (activeGroup === "city")   return d.cities.includes(activeFilter);
-      if (activeGroup === "type")   return d.types.includes(activeFilter);
-      return true;
-    });
-  }
+  let result = data.dishes;
+  if (activeCity) result = result.filter(d => d.cities.includes(activeCity));
+  else if (activeRegion) result = result.filter(d => matchesRegion(d, activeRegion));
+  if (activeType) result = result.filter(d => d.types.includes(activeType));
 
   if (searchQuery) {
-    const q = stripDiacritics(searchQuery);
+    const q = fold(searchQuery);
+    const qCompact = q.replace(/[\s'-]/g, "");
     result = result.filter(d =>
-      stripDiacritics(d.vi).includes(q) || d.en.toLowerCase().includes(q)
+      d.native.includes(searchQuery) ||
+      fold(d.native).includes(q) ||
+      fold(d.roman).includes(q) || fold(d.roman).replace(/[\s'-]/g, "").includes(qCompact) ||
+      d.en.toLowerCase().includes(q) ||
+      d.id.replace(/-/g, "").includes(qCompact) ||
+      (d.ingredients || []).some(i => i.toLowerCase().includes(q))
     );
   }
-
   return result;
+}
+
+function describeFilters(n) {
+  const parts = [];
+  if (activeType) parts.push(activeType);
+  const where = activeCity || activeRegion;
+  let s = `${n} ${parts.join(" ")}${parts.length ? " " : ""}dish${n !== 1 ? "es" : ""}`;
+  if (where) s += ` in ${where}`;
+  return s;
 }
 
 function renderGrid() {
   const grid = document.getElementById("grid");
   const label = document.getElementById("resultsLabel");
-  const countBadge = document.getElementById("dishCount");
   const filtered = getFilteredDishes();
-
-  countBadge.textContent = filtered.length;
+  document.getElementById("dishCount").textContent = filtered.length;
 
   if (filtered.length === 0) {
-    const emptyMsg = searchQuery
-      ? `No dishes match "<strong>${searchQuery}</strong>"`
-      : "No dishes match this filter";
-    label.innerHTML = emptyMsg;
-    grid.innerHTML = `
-      <div class="empty-state">
-        <span class="emoji">🥢</span>
-        <p>No dishes found.<br>Try a different search or filter!</p>
-      </div>`;
+    label.innerHTML = searchQuery ? `No dishes match "<strong>${esc(searchQuery)}</strong>"` : "No dishes match this filter";
+    grid.innerHTML = `<div class="empty-state"><span class="emoji">🥢</span><p>No dishes found.<br>Try a different search or filter!</p></div>`;
     return;
   }
 
-  let filterLabel = `All ${filtered.length} dishes`;
-  if (searchQuery) filterLabel = `${filtered.length} result${filtered.length !== 1 ? "s" : ""} for "${searchQuery}"`;
-  else if (activeFilter) filterLabel = `${filtered.length} ${activeFilter} dish${filtered.length !== 1 ? "es" : ""}`;
-  label.textContent = `Showing ${filterLabel}`;
+  const anyFilter = activeRegion || activeCity || activeType;
+  label.textContent = searchQuery
+    ? `${filtered.length} result${filtered.length !== 1 ? "s" : ""} for "${searchQuery}"`
+    : anyFilter ? `Showing ${describeFilters(filtered.length)}` : `Showing all ${filtered.length} ${country.name} dishes`;
 
-  grid.innerHTML = filtered.map(d => `
+  grid.innerHTML = filtered.map(d => {
+    const lang = isMultiLang() ? langOf(d) : null;
+    return `
     <div class="card" data-id="${d.id}" onclick="openSheet('${d.id}')">
       <div class="card-img-wrap">
         <div class="img-placeholder">${d.emoji}</div>
-        <img class="loading" src="${d.img}" alt="${d.en}"
+        ${d.img ? `<img class="loading" src="${d.img}" alt="${esc(d.en)}" loading="lazy" decoding="async"
           onload="this.classList.remove('loading');this.classList.add('loaded')"
-          onerror="this.style.display='none'">
-        <div class="play-badge" onclick="event.stopPropagation(); playDish(dishes.find(x=>x.id==='${d.id}'))">🔊</div>
+          onerror="this.style.display='none'">` : ""}
+        ${lang && d.lang === "yue" ? `<div class="lang-flag" title="${lang.label}">${lang.short} ${lang.label}</div>` : ""}
+        <div class="play-badge" onclick="event.stopPropagation(); playDishById('${d.id}')">🔊</div>
       </div>
       <div class="card-body">
-        <div class="card-vi">${d.vi}</div>
-        <div class="card-en">${d.en}</div>
+        <div class="card-vi ${d.roman ? "cjk" : ""}">${esc(d.native)}</div>
+        ${d.roman ? `<div class="card-roman">${esc(d.roman)}</div>` : ""}
+        <div class="card-en">${esc(d.en)}</div>
         <div class="card-tags">
-          <span class="tag region">${d.region}</span>
-          ${d.cities.map(c => `<span class="tag city">${c}</span>`).join("")}
+          <span class="tag region">${esc(d.region)}</span>
+          ${d.cities.filter(c => c !== d.region).map(c => `<span class="tag city">${esc(c)}</span>`).join("")}
         </div>
       </div>
-    </div>
-  `).join("");
+    </div>`;
+  }).join("");
 }
 
 // ═══════════════════════════════════════════════
 // DETAIL SHEET
 // ═══════════════════════════════════════════════
 function openSheet(id) {
-  const dish = dishes.find(d => d.id === id);
+  const dish = dishById(id);
   if (!dish) return;
   currentDish = dish;
+  const lang = langOf(dish);
 
-  document.getElementById("sheetImg").src = dish.img;
-  document.getElementById("sheetImg").alt = dish.en;
-  document.getElementById("sheetImg").style.display = "";
-  document.getElementById("sheetViName").textContent = dish.vi;
+  const img = document.getElementById("sheetImg");
+  if (dish.img) { img.src = dish.img; img.alt = dish.en; img.style.display = ""; }
+  else { img.removeAttribute("src"); img.style.display = "none"; }
+  const nameEl = document.getElementById("sheetViName");
+  nameEl.textContent = dish.native;
+  nameEl.classList.toggle("cjk", !!dish.roman);
+  const romanEl = document.getElementById("sheetRoman");
+  romanEl.textContent = dish.roman || "";
+  romanEl.style.display = dish.roman ? "" : "none";
   document.getElementById("sheetEnName").textContent = dish.en;
+  document.getElementById("sheetPronLabel").textContent = isMultiLang() ? `Say (${lang.label}):` : "Say:";
   document.getElementById("sheetPronText").textContent = dish.pron;
   document.getElementById("sheetDesc").textContent = dish.desc;
 
-  // Meta chips
-  const meta = document.getElementById("sheetMeta");
-  meta.innerHTML = `
-    <span class="meta-chip region">🗺 ${dish.region}</span>
-    ${dish.cities.map(c => `<span class="meta-chip city">📍 ${c}</span>`).join("")}
-    ${dish.types.map(t => `<span class="meta-chip type">${t}</span>`).join("")}
-  `;
+  document.getElementById("sheetMeta").innerHTML = `
+    <span class="meta-chip country">${country.flag} ${esc(country.name)}</span>
+    <span class="meta-chip region">🗺 ${esc(dish.region)}</span>
+    ${dish.cities.filter(c => c !== dish.region).map(c => `<span class="meta-chip city">📍 ${esc(c)}</span>`).join("")}
+    ${dish.types.map(t => `<span class="meta-chip type">${esc(t)}</span>`).join("")}`;
 
-  // Ingredients
   document.getElementById("sheetIngredients").innerHTML =
-    dish.ingredients.map(i => `<span class="ingredient-chip">${i}</span>`).join("");
+    (dish.ingredients || []).map(i => `<span class="ingredient-chip">${esc(i)}</span>`).join("");
 
   setSheetPlaying(false);
-
   document.getElementById("sheetOverlay").classList.add("open");
-  document.getElementById("sheet").classList.add("open");
+  const sheet = document.getElementById("sheet");
+  sheet.scrollTop = 0;
+  sheet.classList.add("open");
   document.body.style.overflow = "hidden";
-
-  // Push history entry so the hardware/browser back button closes the sheet
   history.pushState({ dish: id }, "");
 }
 
-function closeSheet() {
-  const sheet = document.getElementById("sheet");
-  if (!sheet.classList.contains("open")) return;
+function hideSheet() {
   stopAudio();
-  sheet.classList.remove("open");
+  document.getElementById("sheet").classList.remove("open");
   document.getElementById("sheetOverlay").classList.remove("open");
   document.body.style.overflow = "";
   currentDish = null;
-  // Pop the history entry we pushed so back doesn't fire again
+}
+
+function closeSheet() {
+  if (!document.getElementById("sheet").classList.contains("open")) return;
+  hideSheet();
   history.back();
 }
 
-// Hardware back button / browser back → close the sheet
+// Hardware back button / browser back → close whatever is open
 window.addEventListener("popstate", () => {
-  const sheet = document.getElementById("sheet");
-  if (sheet.classList.contains("open")) {
-    stopAudio();
-    sheet.classList.remove("open");
-    document.getElementById("sheetOverlay").classList.remove("open");
-    document.body.style.overflow = "";
-    currentDish = null;
-  }
+  if (document.getElementById("sheet").classList.contains("open")) hideSheet();
+  if (document.getElementById("countrySheet").classList.contains("open")) closeCountryPicker(true);
 });
 
-// Close sheet on escape
 document.addEventListener("keydown", e => {
-  if (e.key === "Escape") closeSheet();
+  if (e.key === "Escape") { closeSheet(); closeCountryPicker(); }
 });
 
 // Swipe down to close sheet
 let touchStartY = 0;
-document.getElementById("sheet").addEventListener("touchstart", e => {
-  touchStartY = e.touches[0].clientY;
-}, { passive: true });
-
+document.getElementById("sheet").addEventListener("touchstart", e => { touchStartY = e.touches[0].clientY; }, { passive: true });
 document.getElementById("sheet").addEventListener("touchend", e => {
   const dy = e.changedTouches[0].clientY - touchStartY;
-  if (dy > 80 && document.getElementById("sheet").scrollTop <= 0) {
-    closeSheet();
-  }
+  if (dy > 80 && document.getElementById("sheet").scrollTop <= 0) closeSheet();
 }, { passive: true });
 
 // ═══════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════
-renderFilterTabs();
-renderPills();
-renderGrid();
+initFilterTabs();
+(async () => {
+  const saved = store("nnn-country");
+  const fromUrl = new URLSearchParams(location.search).get("country");
+  const id = COUNTRIES.some(c => c.id === fromUrl) ? fromUrl : (COUNTRIES.some(c => c.id === saved) ? saved : "vn");
+  try {
+    await selectCountry(id, { save: !!fromUrl });
+  } catch (e) {
+    console.error(e);
+    document.getElementById("grid").innerHTML = `<div class="empty-state"><span class="emoji">📡</span><p>Couldn't load dishes.<br>Check your connection and reload.</p></div>`;
+  }
+})();
 
 // Pre-load voices on iOS (must be triggered after a user gesture)
 document.addEventListener("touchstart", () => {

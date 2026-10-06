@@ -9,3 +9,6 @@ deploy_key
 download_images.py
 download_audio.sh
 download_images.sh
+
+# Local asset-build scratch folder
+.cnbuild/
