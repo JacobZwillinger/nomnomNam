@@ -3,7 +3,7 @@
 // Photos and audio are cached per country by the page (see cacheCountryMedia in index.html)
 // into MEDIA_CACHE, which survives app updates so travelers don't re-download.
 
-const CORE_CACHE = "nnn-core-v11";
+const CORE_CACHE = "nnn-core-v12";
 const MEDIA_CACHE = "nnn-media-v1";
 
 const CORE = [

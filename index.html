@@ -728,6 +728,15 @@
     }
     .meta-chip.country { border-color: rgba(240,237,232,0.25); color: var(--text); }
 
+    .iconic-star {
+      position: absolute; top: 7px; right: 7px; z-index: 2; font-size: 13px;
+      background: rgba(0,0,0,0.55); border-radius: 50%; width: 26px; height: 26px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .pill.must-try { border-color: rgba(244,164,53,0.5); color: var(--accent2); }
+    .pill.must-try.active { background: var(--accent2); border-color: var(--accent2); color: #1a1a1a; }
+    .filters-row:empty { display: none; }
+
     /* ── PHRASE LANGUAGE TABS ── */
     .phrase-lang-tabs { display: flex; gap: 7px; padding: 4px 0 2px; }
     .phrase-lang-note { font-size: 12px; color: var(--text-muted); padding: 6px 2px 0; }
@@ -855,7 +864,7 @@ const COUNTRIES = [
     langs: { vi: { tts: "vi-VN", label: "Vietnamese", short: "VI" } }
   },
   {
-    id: "cn", name: "China", native: "中国", flag: "🇨🇳", dishCount: 202,
+    id: "cn", name: "China", native: "中国", flag: "🇨🇳", dishCount: 1278,
     subtitle: "Tap any dish · Show the characters, play the sound",
     langs: {
       "zh-CN": { tts: "zh-CN", label: "Mandarin",  short: "普" },
@@ -879,6 +888,7 @@ let activeGroup = "all";      // which pill row is showing: all | region | city 
 let activeRegion = null;
 let activeCity = null;
 let activeType = null;
+let mustTry = false;         // show only must-try (iconic) dishes
 let phraseLang = null;        // selected phrase language for multi-language countries
 
 let currentDish = null;
@@ -920,7 +930,7 @@ async function selectCountry(id, { save = true } = {}) {
   if (save) store("nnn-country", meta.id);
 
   // Reset filters & search for the new country
-  activeGroup = "all"; activeRegion = activeCity = activeType = null;
+  activeGroup = "all"; activeRegion = activeCity = activeType = null; mustTry = false;
   searchQuery = "";
   document.getElementById("searchInput").value = "";
   document.getElementById("searchClear").classList.remove("visible");
@@ -1247,7 +1257,7 @@ function initFilterTabs() {
   document.querySelectorAll(".filter-tab").forEach(tab => {
     tab.addEventListener("click", () => {
       activeGroup = tab.dataset.group;
-      if (activeGroup === "all") { activeRegion = activeCity = activeType = null; }
+      if (activeGroup === "all") { activeRegion = activeCity = activeType = null; mustTry = false; }
       document.querySelectorAll(".filter-tab").forEach(t => t.classList.toggle("active", t === tab));
       renderPills();
       renderGrid();
@@ -1272,6 +1282,14 @@ function renderPills() {
   });
 
   row.innerHTML = "";
+  const iconicCount = data.dishes.filter(d => d.iconic).length;
+  if (iconicCount && iconicCount < data.dishes.length) {
+    const star = document.createElement("button");
+    star.className = "pill must-try" + (mustTry ? " active" : "");
+    star.innerHTML = `⭐ Must-try <span class="pill-count">${iconicCount}</span>`;
+    star.onclick = () => { mustTry = !mustTry; renderPills(); renderGrid(); };
+    row.appendChild(star);
+  }
   if (activeGroup === "all") return;
 
   let pills = [];
@@ -1333,6 +1351,7 @@ function getFilteredDishes() {
   if (activeCity) result = result.filter(d => d.cities.includes(activeCity));
   else if (activeRegion) result = result.filter(d => matchesRegion(d, activeRegion));
   if (activeType) result = result.filter(d => d.types.includes(activeType));
+  if (mustTry) result = result.filter(d => d.iconic);
 
   if (searchQuery) {
     const q = fold(searchQuery);
@@ -1343,7 +1362,8 @@ function getFilteredDishes() {
       fold(d.roman).includes(q) || fold(d.roman).replace(/[\s'-]/g, "").includes(qCompact) ||
       d.en.toLowerCase().includes(q) ||
       d.id.replace(/-/g, "").includes(qCompact) ||
-      (d.ingredients || []).some(i => i.toLowerCase().includes(q))
+      (d.ingredients || []).some(i => i.toLowerCase().includes(q)) ||
+      d.types.some(t => t.toLowerCase().includes(q))
     );
   }
   return result;
@@ -1351,6 +1371,7 @@ function getFilteredDishes() {
 
 function describeFilters(n) {
   const parts = [];
+  if (mustTry) parts.push("must-try");
   if (activeType) parts.push(activeType);
   const where = activeCity || activeRegion;
   let s = `${n} ${parts.join(" ")}${parts.length ? " " : ""}dish${n !== 1 ? "es" : ""}`;
@@ -1370,7 +1391,7 @@ function renderGrid() {
     return;
   }
 
-  const anyFilter = activeRegion || activeCity || activeType;
+  const anyFilter = activeRegion || activeCity || activeType || mustTry;
   label.textContent = searchQuery
     ? `${filtered.length} result${filtered.length !== 1 ? "s" : ""} for "${searchQuery}"`
     : anyFilter ? `Showing ${describeFilters(filtered.length)}` : `Showing all ${filtered.length} ${country.name} dishes`;
@@ -1385,6 +1406,7 @@ function renderGrid() {
           onload="this.classList.remove('loading');this.classList.add('loaded')"
           onerror="this.style.display='none'">` : ""}
         ${lang && d.lang === "yue" ? `<div class="lang-flag" title="${lang.label}">${lang.short} ${lang.label}</div>` : ""}
+        ${d.iconic && !mustTry && data.dishes.some(x => !x.iconic) ? `<div class="iconic-star" title="Must-try">⭐</div>` : ""}
         <div class="play-badge" onclick="event.stopPropagation(); playDishById('${d.id}')">🔊</div>
       </div>
       <div class="card-body">
